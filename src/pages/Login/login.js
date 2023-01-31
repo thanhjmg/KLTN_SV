@@ -72,7 +72,7 @@ function Login() {
                                         <input
                                             type="text"
                                             className={cx(
-                                                'block p-2 pl-4 caret-lcn-blue-4 text-sm w-full rounded-lcn-login-input bg-transparent border border-lcn-blue-4 outline-none placeholder:text-lcn-placeholder placeholder:italic ',
+                                                'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-sv-login-input bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
                                             )}
                                             placeholder="Nhập mã sinh viên"
                                           
@@ -82,7 +82,7 @@ function Login() {
                                         <input
                                             type="text"
                                             className={cx(
-                                                'block p-2 pl-4 caret-lcn-blue-4 text-sm w-full rounded-lcn-login-input bg-transparent border border-lcn-blue-4 outline-none placeholder:text-lcn-placeholder placeholder:italic ',
+                                                'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-sv-login-input bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
                                             )}
                                             placeholder="Nhập mật khẩu"
                                           
@@ -92,8 +92,8 @@ function Login() {
                                     <Button
                                     className={cx(
                                         'w-full h-full  ',
-                                        'border border-opacity-100 border-lcn-blue-4 outline-none text-lcn-blue-4',
-                                        'bg-lcn-blue-3 justify-center ',
+                                        'border border-opacity-100 border-sv-blue-4 outline-none text-sv-blue-4',
+                                        'bg-sv-blue-3 justify-center ',
                                     )}
                                      onClick={handleLogin}
                                 >
