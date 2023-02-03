@@ -84,7 +84,7 @@ function LichTheoTuan() {
                     ></MenuItem>
                 </div>
                 <div className="w-5/6 h-min bg-white ml-4">
-                    <div className="text-xl font-bold text-gray-500 pt-3 pl-2">Lịch học, lịch thi theo tuần</div>
+                    <div className="text-xl font-bold text-sv-blue-5 pt-3 pl-2">Lịch học, lịch thi theo tuần</div>
                     <div className="flex flex-row items-center justify-center">
                         <div className="">
                             <div className="flex flex-row text-sm">
@@ -154,7 +154,7 @@ function LichTheoTuan() {
                     <div className="m-2">
                         <div className="">
                             <table className={cx('table')}>
-                                <thead>
+                                <thead className="text-sv-blue-5">
                                     <tr className={cx('thead bg-blue-100')}>
                                         <th className={cx('thead-ca')}>Ca học</th>
                                         <th className={cx('thead-ngay')}>
@@ -209,6 +209,17 @@ function LichTheoTuan() {
                                                 tiet="Tiết: 1 - 3"
                                                 phong="Phòng: X11.01"
                                                 gv="GV: Huỳnh Hữu Nghĩa"
+                                                type="lichthi"
+                                            />
+                                        </td>
+                                        <td>
+                                            <ItemLichHoc
+                                                mon="Lập trình hướng đối tượng"
+                                                lop="DHKTPM15A - 420300154902"
+                                                tiet="Tiết: 1 - 3"
+                                                phong="Phòng: X11.01"
+                                                gv="GV: Huỳnh Hữu Nghĩa"
+                                                type="online"
                                             />
                                         </td>
                                         <td>
@@ -227,15 +238,7 @@ function LichTheoTuan() {
                                                 tiet="Tiết: 1 - 3"
                                                 phong="Phòng: X11.01"
                                                 gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
-                                        </td>
-                                        <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
+                                                type="huy"
                                             />
                                         </td>
                                     </tr>
@@ -294,15 +297,15 @@ function LichTheoTuan() {
                         <div className="ml-2 h-4 flex items-center">
                             <p>Lịch học</p>
                         </div>
-                        <div className="h-4 w-10 bg-blue-200 ml-4"></div>
+                        <div className="h-4 w-10 bg-orange-300 ml-4"></div>
                         <div className="ml-2 h-4 flex items-center">
                             <p>Lịch thi</p>
                         </div>
-                        <div className="h-4 w-10 bg-blue-200 ml-4"></div>
+                        <div className="h-4 w-10 bg-blue-400 ml-4"></div>
                         <div className="ml-2 h-4 flex items-center">
                             <p>Lịch trực tuyến</p>
                         </div>
-                        <div className="h-4 w-10 bg-blue-200 ml-4"></div>
+                        <div className="h-4 w-10 bg-red-400 ml-4"></div>
                         <div className="ml-2 h-4 flex items-center">
                             <p>Tạm ngưng</p>
                         </div>

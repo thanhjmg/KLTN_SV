@@ -1,8 +1,9 @@
 import classNames from "classnames";
 import logo_iuh from "./../../images/logo_iuh.png"
 import { BiSearch } from "react-icons/bi";
-import {FaHome} from "react-icons/fa"
+import {FaHome,FaCaretDown} from "react-icons/fa"
 import { useState, useRef } from "react";
+import Select from 'react-select';
 const cx = classNames.bind();
 function DefaultLayout({children}) {
     const [search, setSearch] = useState('hidden');
@@ -15,6 +16,16 @@ function DefaultLayout({children}) {
         setSearch('hidden')
        }
     }
+
+    const techCompanies = [
+        { label: "Apple", value: 1 },
+        { label: "Facebook", value: 2 },
+        { label: "Netflix", value: 3 },
+        { label: "Tesla", value: 4 },
+        { label: "Amazon", value: 5 },
+        { label: "Alphabet", value: 6 },
+      ];
+      
    
     const CheckSearch =()=>{
         console.log(searchRef.current);
@@ -48,7 +59,7 @@ function DefaultLayout({children}) {
         </div>
         <div className={cx('flex flex-row w-4/12  justify-between items-center ')}>
                   
-                  <div className="flex flex-row justify-center items-center text-sv-placeholder">
+                  <div className="flex flex-row justify-center items-center text-sv-text-2">
                   <FaHome className="text-center" size={20}/>
                       <p className="text-xs ml-2">Trang chủ</p>
                   </div>
@@ -60,8 +71,9 @@ function DefaultLayout({children}) {
                                                   className={cx('h-10 w-10 rounded-full')}
                                               />
                       </div>
-                      <div className="ml-3">
-                            <p className="text-sv-blue-4">Nguyễn Tuấn Thanh</p>
+                      <div className=" flex flex-row ml-3 justify-center items-center">
+                            <p className="text-sv-blue-4 mr-2">Nguyễn Tuấn Thanh</p>
+                            <FaCaretDown size={15} />
                      </div>
                   </div>
        </div>

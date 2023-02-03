@@ -9,8 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import config from "../../configRoutes";
 import 'react-slideshow-image/dist/styles.css'
 import { Slide } from 'react-slideshow-image';
+import styles from '../Login/login.css'
 
-const cx = classNames;
+const cx = classNames.bind(styles);
 function Login() {
     const navigate = useNavigate();
     const spanStyle = {
@@ -46,7 +47,7 @@ function Login() {
         <>     
         <div className="h-full flex w-full">          
            
-                <div className="w-9/12 containerSlide">
+                <div className={cx(" slide w-9/12 containerSlide")}>
                
         <Slide>
          {slideImages.map((slideImage, index)=> (
@@ -59,7 +60,7 @@ function Login() {
         </Slide>
       
                 </div>
-                <div className="w-3/12">
+                <div className=" max-w-max w-3/12">
                     <div className=" flex w-full rounded-xl justify-center items-center h-full bg-gradient-layout">
 
                        <div className="h-5/6 w-5/6 justify-center items-center rounded-xl">
