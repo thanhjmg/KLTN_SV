@@ -1,0 +1,40 @@
+import React from 'react';
+
+function ItemLichHoc({ mon, lop, tiet, phong, gv, note, type }) {
+    var bg = ' bg-blue-100 ';
+    var pause =
+        ' before:absolute before:left-0 before:top-11 before:w-32 before:h-4 before:bg-red-500 before:rotate-45';
+
+    if (!!type && type === 'lichthi') bg = 'bg-orgran-200';
+    else if (!!type && type === 'online') bg = 'bg-';
+    return (
+        <div className={'rounded-xl border relative border-gray-500 m-2 p-2 ' + bg}>
+            <table className="table-child p-4 w-24 h-min text-sm">
+                <tr>
+                    <td>
+                        <p>
+                            <b>{mon}</b>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{lop}</td>
+                </tr>
+                <tr>
+                    <td>{tiet}</td>
+                </tr>
+                <tr>
+                    <td>{phong}</td>
+                </tr>
+                <tr>
+                    <td>{gv}</td>
+                </tr>
+                <tr>
+                    <td>{note}</td>
+                </tr>
+            </table>
+        </div>
+    );
+}
+
+export default ItemLichHoc;

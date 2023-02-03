@@ -3,3 +3,10 @@
         cursor: pointer;
     }
 }
+
+.menu-item {
+    &:hover {
+        cursor: pointer;
+        border-left: solid 3px;
+    }
+}
