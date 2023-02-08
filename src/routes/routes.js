@@ -4,6 +4,7 @@ import Home from '../pages/Home';
 import LichTheoTuan from '../pages/LichTheoTuan';
 import KetQuaHocTap from '../pages/KetQuaHocTap';
 
+import DangKyHocPhan from '../pages/DangKyHocPhan';
 import SignIn from '../pages/Login';
 import routeConfig from '../configRoutes';
 //public
@@ -19,6 +20,10 @@ const publicRoutes = [
     {
         path: routeConfig.routeConfig.lichTheoTuan,
         component: LichTheoTuan,
+    },
+    {
+        path: routeConfig.routeConfig.dangKyHP,
+        component: DangKyHocPhan,
     },
     {
         path: routeConfig.routeConfig.signIn,
