@@ -2,6 +2,7 @@ import { LoginLayout } from '../layout';
 
 import Home from '../pages/Home';
 import LichTheoTuan from '../pages/LichTheoTuan';
+import KetQuaHocTap from '../pages/KetQuaHocTap';
 
 import SignIn from '../pages/Login';
 import routeConfig from '../configRoutes';
@@ -10,6 +11,10 @@ const publicRoutes = [
     {
         path: routeConfig.routeConfig.home,
         component: Home,
+    },
+    {
+        path: routeConfig.routeConfig.ketQuaHocTap,
+        component: KetQuaHocTap,
     },
     {
         path: routeConfig.routeConfig.lichTheoTuan,
