@@ -1,25 +1,27 @@
 import classNames from 'classnames';
 import logo_iuh from './../../images/logo_iuh.png';
+import iuh from './../../images/iuh.jpg';
 import { FaCalendarAlt, FaCalendarCheck, FaRegChartBar, FaBuffer, FaList } from 'react-icons/fa';
 import ItemMenuHome from '../../components/ItemMenuHome';
 import { useState } from 'react';
-import config from "../../configRoutes";
+import config from '../../configRoutes';
 import { useNavigate } from 'react-router-dom';
+import style from './home.scss';
 function Home() {
-    const cx = classNames.bind();
+    const cx = classNames.bind(style);
     const options = ['HK1 (2021-2022)', 'HK1 (2021-2022)', 'HK1 (2021-2022)'];
     const [selectedOption, setSelectedOption] = useState(options[0]);
     const navigate = useNavigate();
     function handleChange(event) {
         setSelectedOption(event.target.value);
     }
-    const handleKetQuaHocTap = async () =>{
-        navigate(config.routeConfig.ketQuaHocTap)
-}
+    const handleKetQuaHocTap = async () => {
+        navigate(config.routeConfig.ketQuaHocTap);
+    };
 
     return (
         <>
-            <div className=" flex w-full h-full justify-start bg-slate-300">
+            <div className={cx('flex w-full h-full justify-start bg-slate-300')}>
                 <div className="w-1/12 "></div>
                 <div className=" flex flex-col w-10/12 h-full">
                     <div className=" flex flex-row">
@@ -42,7 +44,12 @@ function Home() {
                                                 />
                                             </div>
                                             <div>
-                                                <p className="text-sv-blue-4 text-xs mt-2">Xem chi tiết</p>
+                                                <p
+                                                    className="text-sv-blue-4 text-xs mt-2 cursor-pointer"
+                                                    onClick={() => navigate(config.routeConfig.thongTinSinhVien)}
+                                                >
+                                                    Xem chi tiết
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="w-2/3 mt-4">
@@ -96,7 +103,7 @@ function Home() {
                         <div className=" flex flex-col w-1/3 mt-5 h-60">
                             <div className="h-1/2 pb-2">
                                 <div className="h-full  p-2 flex bg-sv-blue-2 d border border-sv-blue-4 rounded ">
-                                    <div className="flex flex-col w-full ">
+                                    <div className="flex flex-col w-full cursor-pointer ">
                                         <p className="ml-4 text-sv-blue-4 text-sm">Lịch học trong tuần</p>
                                         <p className="p-4 text-6xl text-sv-blue-4 ">0</p>
                                     </div>
@@ -108,7 +115,7 @@ function Home() {
                                 </div>
                             </div>
                             <div className="h-1/2  p-2 flex bg-sv-yellow-1 d border border-sv-yellow-2 rounded ">
-                                <div className="flex flex-col w-full ">
+                                <div className="flex flex-col w-full cursor-pointer">
                                     <p className="ml-4 text-sv-yellow-2 text-sm">Lịch thi trong tuần</p>
                                     <p className="p-4 text-6xl text-sv-yellow-2 ">0</p>
                                 </div>
@@ -128,7 +135,7 @@ function Home() {
                                     <ItemMenuHome
                                         Icon={<FaCalendarAlt color="#47A9FF" size={30} />}
                                         NameMenu="Lịch theo tuần"
-                                        onClick={() => alert('tuan')}
+                                        onClick={() => navigate(config.routeConfig.lichTheoTuan)}
                                     ></ItemMenuHome>
                                     <ItemMenuHome
                                         Icon={<FaRegChartBar color="#47A9FF" size={30} />}
@@ -143,7 +150,7 @@ function Home() {
                                     <ItemMenuHome
                                         Icon={<FaList color="#47A9FF" size={30} />}
                                         NameMenu="Lịch theo tiến độ "
-                                        onClick={() => alert('thang')}
+                                        onClick={() => navigate(config.routeConfig.lichTheoTienDo)}
                                     ></ItemMenuHome>
                                 </div>
                             </div>
