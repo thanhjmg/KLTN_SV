@@ -8,6 +8,8 @@ import DangKyHocPhan from '../pages/DangKyHocPhan';
 import SignIn from '../pages/Login';
 import ChuongTrinhKhung from '../pages/ChuongTrinhKhung';
 import routeConfig from '../configRoutes';
+import ThongTinSinhVien from '../pages/ThongTinSinhVien';
+import LichTheoTienDo from '../pages/LichTheoTienDo';
 //public
 const publicRoutes = [
     {
@@ -23,12 +25,20 @@ const publicRoutes = [
         component: LichTheoTuan,
     },
     {
+        path: routeConfig.routeConfig.thongTinSinhVien,
+        component: ThongTinSinhVien,
+    },
+    {
         path: routeConfig.routeConfig.dangKyHP,
         component: DangKyHocPhan,
     },
     {
         path: routeConfig.routeConfig.ChuongTrinhKhung,
         component: ChuongTrinhKhung,
+    },
+    {
+        path: routeConfig.routeConfig.lichTheoTienDo,
+        component: LichTheoTienDo,
     },
     {
         path: routeConfig.routeConfig.signIn,

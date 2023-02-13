@@ -1,12 +1,12 @@
-.table-kqht {
+.table-lttd {
     border-collapse: collapse;
-    position: relative;
+    text-align: center;
     vertical-align: middle;
-    width: auto;
+    width: 100%;
 }
-.table-kqht tr > th,
+.table-lttd tr > th,
 tr > td {
-    // padding: 4px;
+    padding: 4px;
     align-items: center;
     border: solid 1px gray;
 }
