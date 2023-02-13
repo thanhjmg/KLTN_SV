@@ -2,8 +2,11 @@ import { LoginLayout } from '../layout';
 
 import Home from '../pages/Home';
 import LichTheoTuan from '../pages/LichTheoTuan';
+import KetQuaHocTap from '../pages/KetQuaHocTap';
+
 import DangKyHocPhan from '../pages/DangKyHocPhan';
 import SignIn from '../pages/Login';
+import ChuongTrinhKhung from '../pages/ChuongTrinhKhung';
 import routeConfig from '../configRoutes';
 //public
 const publicRoutes = [
@@ -12,12 +15,20 @@ const publicRoutes = [
         component: Home,
     },
     {
+        path: routeConfig.routeConfig.ketQuaHocTap,
+        component: KetQuaHocTap,
+    },
+    {
         path: routeConfig.routeConfig.lichTheoTuan,
         component: LichTheoTuan,
     },
     {
         path: routeConfig.routeConfig.dangKyHP,
         component: DangKyHocPhan,
+    },
+    {
+        path: routeConfig.routeConfig.ChuongTrinhKhung,
+        component: ChuongTrinhKhung,
     },
     {
         path: routeConfig.routeConfig.signIn,

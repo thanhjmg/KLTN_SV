@@ -43,7 +43,7 @@ function LichTheoTuan() {
                             <div className="text-xl">
                                 <FaHome color="gray" />
                             </div>
-                            <div className="ml-2 text-gray-500">Trang chủ</div>
+                            <div className="ml-2 text-gray-500 hover:cursor-pointer">Trang chủ</div>
                         </div>
                     </div>
                     <MenuItem

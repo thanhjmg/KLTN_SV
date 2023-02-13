@@ -3,14 +3,20 @@ import logo_iuh from './../../images/logo_iuh.png';
 import { FaCalendarAlt, FaCalendarCheck, FaRegChartBar, FaBuffer, FaList } from 'react-icons/fa';
 import ItemMenuHome from '../../components/ItemMenuHome';
 import { useState } from 'react';
+import config from "../../configRoutes";
+import { useNavigate } from 'react-router-dom';
 function Home() {
     const cx = classNames.bind();
     const options = ['HK1 (2021-2022)', 'HK1 (2021-2022)', 'HK1 (2021-2022)'];
     const [selectedOption, setSelectedOption] = useState(options[0]);
-
+    const navigate = useNavigate();
     function handleChange(event) {
         setSelectedOption(event.target.value);
     }
+    const handleKetQuaHocTap = async () =>{
+        navigate(config.routeConfig.ketQuaHocTap)
+}
+
     return (
         <>
             <div className=" flex w-full h-full justify-start bg-slate-300">
@@ -127,7 +133,7 @@ function Home() {
                                     <ItemMenuHome
                                         Icon={<FaRegChartBar color="#47A9FF" size={30} />}
                                         NameMenu="Kết quả học tập "
-                                        onClick={() => alert('thang')}
+                                        onClick={handleKetQuaHocTap}
                                     ></ItemMenuHome>
                                     <ItemMenuHome
                                         Icon={<FaBuffer color="#47A9FF" size={30} />}
