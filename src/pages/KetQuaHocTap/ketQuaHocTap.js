@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Scrollbar } from 'react-scrollbars-custom';
 import classNames from 'classnames';
 import style from './ketQuaHocTap.scss';
+import Menu from '../../components/Menu/menu';
+
 function KetQuaHocTap() {
+    const [showMenu, setShowMenu] = useState('false');
     const cx = classNames.bind(style);
+    function Menu1() {
+        showMenu ? setShowMenu(false) : setShowMenu(true);
+    }
     const listDiem = [
         {
             TK1: '3.0',

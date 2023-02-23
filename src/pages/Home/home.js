@@ -6,12 +6,31 @@ import ItemMenuHome from '../../components/ItemMenuHome';
 import { useState } from 'react';
 import config from '../../configRoutes';
 import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import style from './home.scss';
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
+    const dataTinChi = {
+        labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
+        datasets: [
+            {
+                label: 'Số tín chỉ',
+                data: [80, 146],
+                backgroundColor: ['#01BAF2', '#71BF45'],
+                // borderColor: ['green', 'blue'],
+            },
+        ],
+    };
+
     const options = ['HK1 (2021-2022)', 'HK1 (2021-2022)', 'HK1 (2021-2022)'];
     const [selectedOption, setSelectedOption] = useState(options[0]);
     const navigate = useNavigate();
+
     function handleChange(event) {
         setSelectedOption(event.target.value);
     }
@@ -52,7 +71,7 @@ function Home() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="w-2/3 mt-4">
+                                        <div className="w-2/3 mt-2">
                                             <div className="flex flex-row text-xs">
                                                 <p className="mr-2 text-sv-text-1 ">MSSV:</p>
                                                 <p className="text-sv-text-2 font-bold"> 19496481</p>
@@ -103,7 +122,10 @@ function Home() {
                         <div className=" flex flex-col w-1/3 mt-5 h-60">
                             <div className="h-1/2 pb-2">
                                 <div className="h-full  p-2 flex bg-sv-blue-2 d border border-sv-blue-4 rounded ">
-                                    <div className="flex flex-col w-full cursor-pointer ">
+                                    <div
+                                        className="flex flex-col w-full cursor-pointer "
+                                        onClick={() => navigate(config.routeConfig.lichTheoTuan)}
+                                    >
                                         <p className="ml-4 text-sv-blue-4 text-sm">Lịch học trong tuần</p>
                                         <p className="p-4 text-6xl text-sv-blue-4 ">0</p>
                                     </div>
@@ -115,7 +137,10 @@ function Home() {
                                 </div>
                             </div>
                             <div className="h-1/2  p-2 flex bg-sv-yellow-1 d border border-sv-yellow-2 rounded ">
-                                <div className="flex flex-col w-full cursor-pointer">
+                                <div
+                                    className="flex flex-col w-full cursor-pointer"
+                                    onClick={() => navigate(config.routeConfig.lichTheoTuan)}
+                                >
                                     <p className="ml-4 text-sv-yellow-2 text-sm">Lịch thi trong tuần</p>
                                     <p className="p-4 text-6xl text-sv-yellow-2 ">0</p>
                                 </div>
@@ -128,7 +153,7 @@ function Home() {
                         </div>
                     </div>
 
-                    <div className="flex h-full">
+                    <div className="flex h-full ">
                         <div className="w-2/3 pl-5 pr-5 ">
                             <div className="">
                                 <div className=" flex w-full justify-between">
@@ -145,7 +170,7 @@ function Home() {
                                     <ItemMenuHome
                                         Icon={<FaBuffer color="#47A9FF" size={30} />}
                                         NameMenu="Đăng ký học phần "
-                                        onClick={() => alert('thang')}
+                                        onClick={() => navigate(config.routeConfig.dangKyHP)}
                                     ></ItemMenuHome>
                                     <ItemMenuHome
                                         Icon={<FaList color="#47A9FF" size={30} />}
@@ -179,13 +204,13 @@ function Home() {
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div>lkllk</div>
+                                            <div></div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="w-4/12">
                                     <div className="h-full  p-2 flex bg-white d border  rounded ">
-                                        <div className="w-full ml-3 mr-3">
+                                        <div className="w-full  mr-3">
                                             <div className="flex justify-between items-center  h-10  border-b-2">
                                                 <div>
                                                     {' '}
@@ -194,7 +219,9 @@ function Home() {
                                                     </h1>
                                                 </div>
                                             </div>
-                                            <div>lkllk</div>
+                                            <div>
+                                                <Doughnut data={dataTinChi} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

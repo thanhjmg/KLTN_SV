@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import style from './ChuongTrinhKhung.module.scss';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import { BsFillCheckCircleFill } from 'react-icons/bs';
-
+import Menu from '../../components/Menu/menu';
 const cx = classNames.bind(style);
 
 var sttMon = 1;
@@ -138,54 +138,11 @@ function ChuongTrinhKhung() {
             <div className="w-1/12"></div>
             <div className="w-10/12 mt-2 flex flex-row">
                 <div className="w-1/6 h-min bg-white">
-                    <div className={cx('menu')}>
-                        <div className={cx('flex flex-row items-center p-2')}>
-                            <div className="text-xl">
-                                <FaHome color="gray" />
-                            </div>
-                            <div className="ml-2 text-gray-500 hover:cursor-pointer">Trang chủ</div>
-                        </div>
-                    </div>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Thông tin chung',
-                                subItems: [
-                                    { name: 'Thông tin sinh viên', to: '' },
-                                    { name: 'Thông tin học tập', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<SlScreenDesktop />}
-                    ></MenuItem>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Học tập',
-                                subItems: [
-                                    { name: 'Kết quả học tập', to: '' },
-                                    { name: 'Lịch theo tuần', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<FaGraduationCap />}
-                    ></MenuItem>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Đăng ký học phần',
-                                subItems: [
-                                    { name: 'Chương trình khung', to: '' },
-                                    { name: 'Đăng ký học phần', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<BsFillCalendar2CheckFill />}
-                    ></MenuItem>
+                    <Menu />
                 </div>
                 <div className="w-5/6 bg-white ml-4">
                     <div className="text-xl text-sv-blue-5 m-4">
-                        <b>Đăng ký học phần</b>
+                        <b>Chương trình khung</b>
                     </div>
                     <div className="border-t border-gray-200 m-2"></div>
                     <div className="m-2">

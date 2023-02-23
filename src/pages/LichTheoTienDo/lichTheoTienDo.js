@@ -3,6 +3,8 @@ import Button from '@mui/material/Button';
 import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 import classNames from 'classnames';
 import style from './lichTheoTienDo.scss';
+import Menu from '../../components/Menu/menu';
+import { FaAlignJustify } from 'react-icons/fa';
 function LichTheoTienDo() {
     const cx = classNames.bind(style);
     const [selectedValue, setSelectedValue] = useState('all');
@@ -30,11 +32,22 @@ function LichTheoTienDo() {
     const handleDateChange = (event) => {
         setDate(event.target.value);
     };
+    const [showMenu, setShowMenu] = useState(false);
+    function Menu1() {
+        showMenu ? setShowMenu(false) : setShowMenu(true);
+    }
 
     return (
         <>
             <div className="flex flex-row w-full h-full bg-gray-200 pt-3 ">
-                <div className="w-1/12 h-full"></div>
+                <span className="w-1/12 mt-10">
+                    <FaAlignJustify size={25} onClick={Menu1} />
+                    <div className={showMenu ? '' : 'hidden'}>
+                        <span className="w-52 absolute  border border-sv-blue-4 bg-white">
+                            <Menu />
+                        </span>
+                    </div>
+                </span>
                 <div className="w-10/12 h-full flex flex-row">
                     <div className="w-full bg-white h-auto border rounded ">
                         <div className="w-full h-12 border-b-2">

@@ -4,7 +4,8 @@ import { BsFillCheckCircleFill } from 'react-icons/bs';
 import classNames from 'classnames';
 import style from './DangKyHocPhan.scss';
 import Button from '@mui/material/Button';
-
+import Menu from '../../components/Menu/menu';
+import { FaUserGraduate, FaUserTie, FaUniversity, FaAlignJustify } from 'react-icons/fa';
 const cx = classNames.bind(style);
 
 function DangKyHocPhan() {
@@ -99,6 +100,7 @@ function DangKyHocPhan() {
     const [selectedMon, setSelectedMon] = useState('');
     const [selectedLop, setSelectedLop] = useState('');
     const [selectedLichHoc, setSelectedLichHoc] = useState('');
+    const [showMenu, setShowMenu] = useState(true);
 
     const handleSelectLoaiDK = (event) => {
         setSelectedLoai(event.target.value);
@@ -115,10 +117,20 @@ function DangKyHocPhan() {
     const handleSelectGioHoc = (maLopHP) => {
         setSelectedLichHoc(`${maLopHP}`);
     };
+    function Menu1() {
+        showMenu ? setShowMenu(false) : setShowMenu(true);
+    }
 
     return (
-        <div className="h-max w-full bg-gray-100 flex flex-row">
-            <div className="w-1/12"></div>
+        <div className="h-max w-full bg-gray-100 flex flex-row relative">
+            <span className="w-1/12 mt-10">
+                <FaAlignJustify size={25} onClick={Menu1} />
+                <div className={showMenu ? '' : 'hidden'}>
+                    <span className="w-52 absolute  border border-sv-blue-4 bg-white">
+                        <Menu />
+                    </span>
+                </div>
+            </span>
             <div className="w-10/12 bg-white mt-2">
                 <div className="text-xl text-sv-blue-5 m-4">
                     <b>Đăng ký học phần</b>

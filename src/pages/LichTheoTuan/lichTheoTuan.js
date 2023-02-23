@@ -8,7 +8,7 @@ import ItemLichHoc from '../../components/ItemLichHoc';
 import classNames from 'classnames';
 import style from './lichTheoTuan.scss';
 import Button from '@mui/material/Button';
-
+import Menu from '../../components/Menu/menu';
 const cx = classNames.bind(style);
 
 function LichTheoTuan() {
@@ -38,50 +38,7 @@ function LichTheoTuan() {
             <div className="w-1/12 h-full"></div>
             <div className="w-10/12 h-full flex flex-row">
                 <div className="w-1/6 h-min bg-white">
-                    <div className={cx('menu')}>
-                        <div className={cx('flex flex-row items-center p-2')}>
-                            <div className="text-xl">
-                                <FaHome color="gray" />
-                            </div>
-                            <div className="ml-2 text-gray-500 hover:cursor-pointer">Trang chủ</div>
-                        </div>
-                    </div>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Thông tin chung',
-                                subItems: [
-                                    { name: 'Thông tin sinh viên', to: '' },
-                                    { name: 'Thông tin học tập', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<SlScreenDesktop />}
-                    ></MenuItem>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Học tập',
-                                subItems: [
-                                    { name: 'Kết quả học tập', to: '' },
-                                    { name: 'Lịch theo tuần', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<FaGraduationCap />}
-                    ></MenuItem>
-                    <MenuItem
-                        menuItems={[
-                            {
-                                name: 'Đăng ký học phần',
-                                subItems: [
-                                    { name: 'Chương trình khung', to: '' },
-                                    { name: 'Đăng ký học phần', to: 'login' },
-                                ],
-                            },
-                        ]}
-                        icon={<BsFillCalendar2CheckFill />}
-                    ></MenuItem>
+                    <Menu />
                 </div>
                 <div className="w-5/6 h-min bg-white ml-4">
                     <div className="text-xl font-bold text-sv-blue-5 pt-3 pl-2">Lịch học, lịch thi theo tuần</div>
