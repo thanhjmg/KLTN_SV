@@ -2,18 +2,21 @@ import { FaHome, FaGraduationCap } from 'react-icons/fa';
 import { SlScreenDesktop } from 'react-icons/sl';
 import { BsFillCalendar2CheckFill } from 'react-icons/bs';
 import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MenuItem from '../../components/ItemMenu';
 import ItemLichHoc from '../../components/ItemLichHoc';
 import classNames from 'classnames';
 import style from './lichTheoTuan.scss';
 import Button from '@mui/material/Button';
 import Menu from '../../components/Menu/menu';
+import moment from 'moment';
+import 'moment/locale/vi';
+
 const cx = classNames.bind(style);
 
 function LichTheoTuan() {
     const [selectedValue, setSelectedValue] = useState('all');
-
+    const [currentDate, setCurrentDate] = useState(moment());
     const handleRadioButtonChange = (event) => {
         setSelectedValue(event.target.value);
     };
@@ -32,7 +35,29 @@ function LichTheoTuan() {
     const handleDateChange = (event) => {
         setDate(event.target.value);
     };
+    const [week, setWeek] = useState([]);
+    useEffect(() => {
+        const startOfWeek = currentDate.clone().isoWeekday(1).startOf('day'); // Lấy ngày bắt đầu tuần từ thứ 2
+        const endOfWeek = currentDate.clone().isoWeekday(7).endOf('day'); // Lấy ngày kết thúc tuần là chủ nhật
 
+        const days = [];
+        for (let i = 0; i <= 6; i++) {
+            const day = startOfWeek.clone().add(i, 'day'); // Thêm các ngày trong tuần vào mảng days
+            moment.locale('vi'); // đặt locale cho tiếng Việt
+
+            const dayStr = day.format('dddd DD/MM/YYYY '); // hiển thị thứ bằng tiếng Việt
+
+            days.push(dayStr); // Thêm ngày đã format vào mảng days
+        }
+        setWeek(days);
+    }, [currentDate]);
+    const capitalizeFirstLetter = (str) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+    const handleNextWeek = () => {
+        const nextWeek = currentDate.clone().add(1, 'week');
+        setCurrentDate(nextWeek);
+    };
     return (
         <div className="flex flex-row w-full h-max bg-gray-200 pt-3">
             <div className="w-1/12 h-full"></div>
@@ -99,7 +124,7 @@ function LichTheoTuan() {
                                     </Button>
                                 </div>
                                 <div className="ml-4 flex items-center">
-                                    <Button variant="contained" size="small">
+                                    <Button variant="contained" size="small" onClick={handleNextWeek}>
                                         Tiếp
                                         <AiOutlineRight></AiOutlineRight>
                                     </Button>
@@ -112,7 +137,7 @@ function LichTheoTuan() {
                         <div className="">
                             <table className={cx('table')}>
                                 <thead className="text-sv-blue-5">
-                                    <tr className={cx('thead bg-blue-100')}>
+                                    {/* <tr className={cx('thead bg-blue-100')}>
                                         <th className={cx('thead-ca')}>Ca học</th>
                                         <th className={cx('thead-ngay')}>
                                             Thứ 2 <br /> 11/11/2022
@@ -135,6 +160,12 @@ function LichTheoTuan() {
                                         <th className={cx('thead-ngay')}>
                                             Chủ nhật <br /> 12/11/2022
                                         </th>
+                                    </tr> */}
+                                    <tr>
+                                        <th>Ca học</th>
+                                        {week.map((day, index) => (
+                                            <th key={index}>{capitalizeFirstLetter(day)}</th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>

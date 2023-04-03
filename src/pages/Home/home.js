@@ -11,10 +11,14 @@ import style from './home.scss';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import { useDispatch, useSelector } from 'react-redux';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
+    const userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    //console.log({ userLogin });
+    //console.log('object');
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
@@ -74,46 +78,41 @@ function Home() {
                                         <div className="w-2/3 mt-2">
                                             <div className="flex flex-row text-xs">
                                                 <p className="mr-2 text-sv-text-1 ">MSSV:</p>
-                                                <p className="text-sv-text-2 font-bold"> 19496481</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.maSinhVien}</p>
                                             </div>
                                             <div className="flex flex-row text-xs mt-4 ">
                                                 <p className="mr-2  w-auto text-sv-text-1 ">Họ tên:</p>
-                                                <p className="text-sv-text-2 font-bold">Nguyễn Tuấn Thanh</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.tenSinhVien}</p>
                                             </div>
                                             <div className="flex flex-row text-xs mt-4">
                                                 <p className="mr-2 text-sv-text-1 ">Giới tính:</p>
-                                                <p className="text-sv-text-2 font-bold">Nam</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.gioiTinh}</p>
                                             </div>
                                             <div className="flex flex-row text-xs mt-4">
                                                 <p className="mr-2 text-sv-text-1 ">Ngày sinh:</p>
-                                                <p className="text-sv-text-2 font-bold">08/12/2001</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.ngaySinh}</p>
                                             </div>
                                             <div className="flex flex-row text-xs mt-4">
                                                 <p className="mr-2 text-sv-text-1 ">Nơi sinh:</p>
-                                                <p className="text-sv-text-2 font-bold">Vĩnh Long</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.noiSinh}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="w-1/3 ">
                                         <div className="flex flex-row text-xs mt-4">
                                             <p className="mr-2 text-sv-text-1 ">Lớp học:</p>
-                                            <p className="text-sv-text-2 font-bold">DHKTPM15A</p>
+                                            <p className="text-sv-text-2 font-bold">{userLogin?.lopHoc.tenLop}</p>
                                         </div>
                                         <div className="flex flex-row text-xs mt-4">
                                             <p className="mr-2 text-sv-text-1 ">Khóa học:</p>
-                                            <p className="text-sv-text-2 font-bold">2019-2020</p>
+                                            <p className="text-sv-text-2 font-bold">{userLogin?.khoaHoc?.tenKhoaHoc}</p>
                                         </div>
-                                        <div className="flex flex-row text-xs mt-4">
-                                            <p className="mr-2 text-sv-text-1 ">Bật đào tạo:</p>
-                                            <p className="text-sv-text-2 font-bold">Đại học</p>
-                                        </div>
-                                        <div className="flex flex-row text-xs mt-4">
-                                            <p className="mr-2 text-sv-text-1 ">Loại hình đào tạo:</p>
-                                            <p className="text-sv-text-2 font-bold">Chính quy</p>
-                                        </div>
+
                                         <div className="flex flex-row text-xs mt-4">
                                             <p className="mr-2 text-sv-text-1 ">Ngành:</p>
-                                            <p className="text-sv-text-2 font-bold">Kỹ thuật phần mền</p>
+                                            <p className="text-sv-text-2 font-bold">
+                                                {userLogin?.lopHoc.nganhHoc.tenNganh}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -196,11 +195,11 @@ function Home() {
                                                         value={selectedOption}
                                                         onChange={handleChange}
                                                     >
-                                                        {options.map((option) => (
-                                                            <option key={option} value={option}>
+                                                        {/* {options.map((option, index) => (
+                                                            <option key={index} value={option}>
                                                                 {option}
                                                             </option>
-                                                        ))}
+                                                        ))} */}
                                                     </select>
                                                 </div>
                                             </div>
