@@ -11,35 +11,55 @@ import Button from '@mui/material/Button';
 import Menu from '../../components/Menu/menu';
 import moment from 'moment';
 import 'moment/locale/vi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
+import { getLichTheoThoiGian } from '~/service/lichService';
 
 const cx = classNames.bind(style);
 
 function LichTheoTuan() {
+    var currSV = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    const dispatch = useDispatch();
+    const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
+    var accessToken = userLoginData?.accessToken;
+    var axiosJWT = getAxiosJWT(dispatch, userLoginData);
+
     const [selectedValue, setSelectedValue] = useState('all');
     const [currentDate, setCurrentDate] = useState(moment());
+    const [listLich, setListLich] = useState([]);
+    const [date, setDate] = useState(currentDate.format('YYYY-MM-DD'));
     const handleRadioButtonChange = (event) => {
         setSelectedValue(event.target.value);
     };
 
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //Tháng trong javascript bắt đầu từ 0
-    var yyyy = today.getFullYear();
+    // var today = new Date();
+    // var dd = String(today.getDate()).padStart(2, '0');
+    // var mm = String(today.getMonth() + 1).padStart(2, '0'); //Tháng trong javascript bắt đầu từ 0
+    // var yyyy = today.getFullYear();
 
-    today = yyyy + '-' + dd + '-' + mm;
+    // today = yyyy + '-' + dd + '-' + mm;
 
-    const [date, setDate] = useState(today);
+    // const [date, setDate] = useState(today);
 
-    console.log(date);
+    //console.log(date);
+    //console.log(currentDate);
 
-    const handleDateChange = (event) => {
-        setDate(event.target.value);
+    const handleDateChange = (e) => {
+        //setDate(event.target.value);
+        const newDate = e.target.value;
+        setDate(newDate);
+        setCurrentDate(moment(newDate, 'YYYY-MM-DD'));
     };
     const [week, setWeek] = useState([]);
     useEffect(() => {
+        // const selectedDate = moment(date);
+        // const selectedWeek = selectedDate.isoWeek();
+        // const selectedYear = selectedDate.isoWeekYear();
+        // const startOfWeek = moment().isoWeek(selectedWeek).isoWeekYear(selectedYear).startOf('isoWeek');
+        // const endOfWeek = moment().isoWeek(selectedWeek).isoWeekYear(selectedYear).endOf('isoWeek');
+
         const startOfWeek = currentDate.clone().isoWeekday(1).startOf('day'); // Lấy ngày bắt đầu tuần từ thứ 2
         const endOfWeek = currentDate.clone().isoWeekday(7).endOf('day'); // Lấy ngày kết thúc tuần là chủ nhật
-
         const days = [];
         for (let i = 0; i <= 6; i++) {
             const day = startOfWeek.clone().add(i, 'day'); // Thêm các ngày trong tuần vào mảng days
@@ -50,16 +70,84 @@ function LichTheoTuan() {
             days.push(dayStr); // Thêm ngày đã format vào mảng days
         }
         setWeek(days);
+        // Lấy ngày đầu tiên của mảng
+        const firstDay = moment(days[0], 'dddd DD/MM/YYYY').format('YYYY/MM/DD');
+
+        // Lấy ngày cuối cùng của mảng
+        const lastDay = moment(days[days.length - 1], 'dddd DD/MM/YYYY').format('YYYY/MM/DD');
+        // console.log(firstDay);
+        // console.log(lastDay);
+        const getAllLich = async () => {
+            let resultLich = await getLichTheoThoiGian(currSV?.maSinhVien, firstDay, lastDay, accessToken, axiosJWT);
+            if (!!resultLich) setListLich(resultLich);
+        };
+        getAllLich();
     }, [currentDate]);
+
+    // console.log(week);
+    // console.log(listLich);
     const capitalizeFirstLetter = (str) => {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
     const handleNextWeek = () => {
         const nextWeek = currentDate.clone().add(1, 'week');
         setCurrentDate(nextWeek);
+        //setReloadNgay(!reloadNgay);
     };
+    const handleDownWeek = () => {
+        const previousWeek = currentDate.clone().subtract(1, 'week');
+        setCurrentDate(previousWeek);
+    };
+    const getDayOfWeek = (date) => {
+        const daysOfWeek = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+        const dayIndex = new Date(date).getDay();
+        return daysOfWeek[dayIndex];
+    };
+
+    function filterLichHocByThuCa(lichHoc, thu) {
+        let ca = 0;
+        switch (thu) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                ca = 6;
+                break;
+            case 6:
+                ca = 12;
+                break;
+            case 7:
+                ca = 18;
+                break;
+            default:
+                break;
+        }
+
+        return lichHoc.filter((item) => {
+            const startTiet = parseInt(item.tiet.split(' - ')[0], 10);
+            const endTiet = parseInt(item.tiet.split(' - ')[1], 10);
+            const startCa = Math.floor(startTiet / 2) + 1;
+            const endCa = Math.floor((endTiet - 1) / 2) + 1;
+            return endCa >= ca && startCa < ca + 6;
+        });
+    }
+
+    function layTietHoc(chuoiTiet) {
+        const matches = chuoiTiet.match(/\d+/g);
+        if (matches === null || matches.length !== 2) {
+            return null; // hoặc giá trị mặc định khác
+        }
+        const soTiet = parseInt(matches[1]) - parseInt(matches[0]) + 1;
+        return soTiet;
+    }
+
+    //console.log(layTietHoc('Tiết 1-3')); // kết quả là 3
+
+    console.log(layTietHoc('Tiết 1-3'));
+
     return (
-        <div className="flex flex-row w-full h-max bg-gray-200 pt-3">
+        <div className="flex flex-row w-full h-screen bg-gray-200 pt-3">
             <div className="w-1/12 h-full"></div>
             <div className="w-10/12 h-full flex flex-row">
                 <div className="w-1/6 h-min bg-white">
@@ -108,19 +196,20 @@ function LichTheoTuan() {
                                         type="date"
                                         className="form-input block w-full px-3 py-2 rounded-md placeholder-gray-400 focus:outline-none 
                                         focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
-                                        value={date}
+                                        value={currentDate.format('YYYY-MM-DD')}
                                         onChange={handleDateChange}
                                     />
                                 </div>
+
                                 <div className="ml-4 flex items-center">
-                                    <Button variant="contained" size="small">
-                                        Hiện tại
+                                    <Button variant="contained" size="small" onClick={handleDownWeek}>
+                                        <AiOutlineLeft />
+                                        Trở lại
                                     </Button>
                                 </div>
                                 <div className="ml-4 flex items-center">
                                     <Button variant="contained" size="small">
-                                        <AiOutlineLeft />
-                                        Trở lại
+                                        Hiện tại
                                     </Button>
                                 </div>
                                 <div className="ml-4 flex items-center">
@@ -172,106 +261,480 @@ function LichTheoTuan() {
                                     <tr className="">
                                         <td className={cx('row-ca ')}>Sáng</td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ hai' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
-                                        </td>
-                                        <td></td>
-                                        <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                                type="lichthi"
-                                            />
-                                        </td>
-                                        <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                                type="online"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ ba' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ tư' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                                type="huy"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ năm' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ sáu' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ bảy' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Chủ nhật' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 7
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className={cx('row-ca ')}>Chiều</td>
-                                        <td></td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
-                                            <ItemLichHoc
-                                                mon="Công nghệ mới"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ hai' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ ba' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ tư' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ năm' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ 6' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ 7' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Chủ nhật' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) < 13 &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 6
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td className={cx('row-ca ')}>Tối</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
                                         <td>
-                                            <ItemLichHoc
-                                                mon="Lập trình hướng đối tượng"
-                                                lop="DHKTPM15A - 420300154902"
-                                                tiet="Tiết: 1 - 3"
-                                                phong="Phòng: X11.01"
-                                                gv="GV: Huỳnh Hữu Nghĩa"
-                                            />
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ hai' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
                                         </td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ ba' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ tư' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ năm' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ sáu' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Thứ bảy' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
+                                        <td>
+                                            {listLich
+                                                ?.filter((lich) => {
+                                                    return (
+                                                        getDayOfWeek(lich.ngayHoc) === 'Chủ nhât' &&
+                                                        layTietHoc(lich.caHoc.tenCaHoc) > 12
+                                                    );
+                                                })
+                                                .map((item, index) => {
+                                                    return (
+                                                        <ItemLichHoc
+                                                            key={item.maLich}
+                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            tiet={item.caHoc.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
+                                                            type={item.trangThai}
+                                                        />
+                                                    );
+                                                })}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
