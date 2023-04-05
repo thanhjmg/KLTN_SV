@@ -12,13 +12,13 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { getHocPhanTheoHocKy } from '../../service/hocPhanService';
+import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
 ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
     const userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
-    //console.log({ userLogin });
-    //console.log('object');
+
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
@@ -105,7 +105,7 @@ function Home() {
                                         </div>
                                         <div className="flex flex-row text-xs mt-4">
                                             <p className="mr-2 text-sv-text-1 ">Khóa học:</p>
-                                            <p className="text-sv-text-2 font-bold">{userLogin?.khoaHoc?.tenKhoaHoc}</p>
+                                            <p className="text-sv-text-2 font-bold">{userLogin?.khoaHoc.tenKhoaHoc}</p>
                                         </div>
 
                                         <div className="flex flex-row text-xs mt-4">

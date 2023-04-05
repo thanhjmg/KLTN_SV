@@ -1,11 +1,11 @@
-import { loginSuccess, loginErorr } from '~/redux/Slice/authSlice';
+import { loginSuccess } from '~/redux/Slice/authSlice';
 
 import { logOutSuccess } from '~/redux/Slice/authSlice';
 import * as httpRequest from '~/utils/httpRequest';
 
 const ROLE_NAME = {
     QUAN_LY: 'ROLE_QUANLY',
-    PHONG_DT: 'PHONGDT',
+    PHONG_DT: 'ROLE_PHONGDAOTAO',
     GIANG_VIEN: 'ROLE_GIANGVIEN',
     SINH_VIEN: 'ROLE_SINHVIEN',
 };
@@ -37,7 +37,7 @@ export const loginUser = async (user, dispatch, navigate) => {
 export const getRefreshToken = async () => {
     try {
         const res = await httpRequest.post(
-            'auth/refresh',
+            'auth/refresh-token',
             {},
             {
                 withCredentials: true,

@@ -71,14 +71,15 @@ function LichTheoTuan() {
         }
         setWeek(days);
         // Lấy ngày đầu tiên của mảng
-        const firstDay = moment(days[0], 'dddd DD/MM/YYYY').format('YYYY/MM/DD');
+        const firstDay = moment(days[0], 'dddd DD/MM/YYYY').format('YYYY-MM-DD');
 
         // Lấy ngày cuối cùng của mảng
-        const lastDay = moment(days[days.length - 1], 'dddd DD/MM/YYYY').format('YYYY/MM/DD');
+        const lastDay = moment(days[days.length - 1], 'dddd DD/MM/YYYY').format('YYYY-MM-DD');
         // console.log(firstDay);
         // console.log(lastDay);
         const getAllLich = async () => {
             let resultLich = await getLichTheoThoiGian(currSV?.maSinhVien, firstDay, lastDay, accessToken, axiosJWT);
+            //console.log(resultLich);
             if (!!resultLich) setListLich(resultLich);
         };
         getAllLich();
@@ -144,7 +145,7 @@ function LichTheoTuan() {
 
     //console.log(layTietHoc('Tiết 1-3')); // kết quả là 3
 
-    console.log(layTietHoc('Tiết 1-3'));
+    //console.log(layTietHoc('Tiết 1-3'));
 
     return (
         <div className="flex flex-row w-full h-screen bg-gray-200 pt-3">
