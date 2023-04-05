@@ -1,107 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AiFillCloseCircle } from 'react-icons/ai';
 import { BsFillCheckCircleFill } from 'react-icons/bs';
 import classNames from 'classnames';
 import style from './DangKyHocPhan.scss';
 import Button from '@mui/material/Button';
 import Menu from '../../components/Menu/menu';
+import { useSelector } from 'react-redux';
+import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
+import { useDispatch } from 'react-redux';
 import { FaUserGraduate, FaUserTie, FaUniversity, FaAlignJustify } from 'react-icons/fa';
+
+import { findHocPhanByMaSinhVienAndMaNganh } from '~/service/hocPhanService';
+import { getLopHocPhanMaHP } from '../../service/lopHocPhanService';
+import { getLichTheoLHP, themLich } from '~/service/lichService';
+import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
+import {
+    getPhieuDKByHocKyMaSinhVien,
+    themPhieuDangKy,
+    themChiTietPhieuDangKy,
+    getChiTietPhieuDKByHocKy,
+} from '../../service/phieuDKHP';
 const cx = classNames.bind(style);
 
 function DangKyHocPhan() {
-    const options = ['HK1 (2021-2022)', 'HK2 (2021-2022)', 'HK3 (2021-2022)'];
-    const listMon = [
-        {
-            maHP: 87464474,
-            tenMon: 'Khóa luận tốt ngiệp',
-            soTC: 4,
-            batBuoc: true,
-            dieuKien: [
-                { maMon: '3432', type: 'a' },
-                { maMon: '3432', type: 'a' },
-            ],
-        },
-        {
-            maHP: 8575844,
-            tenMon: 'Thực tập danh nghiệp',
-            soTC: 4,
-            batBuoc: false,
-            dieuKien: [{ maMon: '3432', type: 'a' }],
-        },
-    ];
-    const listLop = [
-        {
-            maHP: 8746994474,
-            tenLopHP: 'Khóa luận tốt ngiệp',
-            lopDuKien: 'DHKTPM15A',
-            siSoToiDa: 70,
-            siSoDK: 62,
-            trangThai: 'Chờ sinh viên đăng ký',
-        },
-        {
-            maHP: 8749964474,
-            tenLopHP: 'Khóa luận tốt ngiệp',
-            lopDuKien: 'DHKTPM15B',
-            siSoToiDa: 80,
-            siSoDK: 22,
-            trangThai: 'Chờ sinh viên đăng ký',
-        },
-    ];
+    const dispatch = useDispatch();
+    const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
+    let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    var accessToken = userLoginData.accessToken;
+    var axiosJWT = getAxiosJWT(dispatch, userLoginData);
+    console.log(userLogin);
+    const [selectedOptionHK, setSelectedOptionHK] = useState('');
+    const [listHocPhan, setListHocPhan] = useState([]);
+    const [listLHP, setListLHP] = useState([]);
+    const [listHK, setListHK] = useState([]);
+    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const [selectedHK, setSelectedHK] = useState('HK005');
+    const [listDK, setListDK] = useState([]);
+    useEffect(() => {
+        const getALLHocPhan = async () => {
+            try {
+                let getHocPhan = await findHocPhanByMaSinhVienAndMaNganh(
+                    userLogin?.maSinhVien,
+                    userLogin?.lopHoc.nganhHoc.maNganh,
+                    accessToken,
+                    axiosJWT,
+                );
+                setListHocPhan(getHocPhan);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getALLHocPhan();
+    }, [userLogin]);
 
-    const listLichHoc = [
-        {
-            maLopHP: '48474747449',
-            lichHoc: 'LT - Thứ 4 (T7-T9)',
-            nhomTH: '',
-            phong: 'A2.03',
-            dayNha: 'A',
-            giangVien: 'Ths Nguyễn Thị Lan',
-            thoiGian: '2/2/2022 - 5/5/2022',
-            type: 'LT',
-        },
-        {
-            maLopHP: '4847476747449',
-            lichHoc: 'TH - Thứ 4 (T7-T9)',
-            nhomTH: '1',
-            phong: 'A2.03',
-            dayNha: 'A',
-            giangVien: 'Ths Nguyễn Thị Lan',
-            thoiGian: '2/2/2022 - 5/5/2022',
-            type: 'TH',
-        },
-        {
-            maLopHP: '4847476747449',
-            lichHoc: 'TH - Thứ 4 (T7-T9)',
-            nhomTH: '2',
-            phong: 'A2.03',
-            dayNha: 'A',
-            giangVien: 'Ths Nguyễn Thị Lan',
-            thoiGian: '2/2/2022 - 5/5/2022',
-            type: 'TH',
-        },
-        {
-            maLopHP: '4847476747449',
-            lichHoc: 'LT - Thứ 4 (T7-T9)',
-            nhomTH: '3',
-            phong: 'A2.03',
-            dayNha: 'A',
-            giangVien: 'Ths Nguyễn Thị Lan',
-            thoiGian: '2/2/2022 - 5/5/2022',
-            type: 'TH',
-        },
-    ];
+    useEffect(() => {
+        const getHocKyByKhoaHoc = async () => {
+            try {
+                if (!!userLogin.khoaHoc) {
+                    const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    var list = await getHocKyTheoKhoaHoc(
+                        `${startYear}-08-01`,
+                        `${endYear}-06-01`,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    setListHK(list);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getHocKyByKhoaHoc();
+    }, [userLogin]);
+
+    useEffect(() => {
+        const getChiTietPhieuDKTheoHocKy = async () => {
+            try {
+                const listChiTietPhieu = await getChiTietPhieuDKByHocKy(selectedHK, accessToken, axiosJWT);
+                console.log(listChiTietPhieu);
+                setListDK(listChiTietPhieu);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getChiTietPhieuDKTheoHocKy();
+    }, [selectedHK]);
+
+    console.log(listDK);
+    const handleSelectHocPhan = async (item) => {
+        console.log(item);
+        setListLHP([]);
+        setListLich([]);
+
+        let result = await getLopHocPhanMaHP(item, accessToken, axiosJWT);
+        setSelectedHP(item);
+        setListLHP(result);
+    };
+    function convertDateFormat(dateString) {
+        let date = new Date(dateString);
+        let day = date.getDate().toString().padStart(2, '0');
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    const options = ['HK1 (2021-2022)', 'HK2 (2021-2022)', 'HK3 (2021-2022)'];
+
     const [selectedOption, setSelectedOption] = useState(options[0]);
 
     function handleChange(event) {
         setSelectedOption(event.target.value);
     }
 
-    const [selectedLoai, setSelectedLoai] = useState('hocmoi');
+    const [selectedLoai, setSelectedLoai] = useState('LDK001');
     const [selectedMon, setSelectedMon] = useState('');
     const [selectedLop, setSelectedLop] = useState('');
+    const [selectedLHP, setSelectedLHP] = useState('');
     const [selectedLichHoc, setSelectedLichHoc] = useState('');
     const [showMenu, setShowMenu] = useState(true);
+    const [selectedHP, setSelectedHP] = useState('');
+    const [listLichHoc, setListLichHoc] = useState([]);
+    const [listLich, setListLich] = useState([]);
+    const [selectedLich, setSelectedLich] = useState([]);
 
+    console.log(selectedLoai);
     const handleSelectLoaiDK = (event) => {
         setSelectedLoai(event.target.value);
     };
@@ -121,6 +144,112 @@ function DangKyHocPhan() {
         showMenu ? setShowMenu(false) : setShowMenu(true);
     }
 
+    const handleSelectLich = (item) => {
+        setSelectedLich(item);
+    };
+    const handleChangeHK = (event) => {
+        setSelectedHK(event.target.value);
+    };
+    console.log(selectedHK);
+    const clickDangKyHP = async () => {
+        const getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
+            userLogin.maSinhVien,
+            selectedHK,
+            accessToken,
+            axiosJWT,
+        );
+        console.log(getPhieuDangKy);
+        if (getPhieuDangKy.length !== 0) {
+            let chiTietPhieuDangKy = {
+                phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                ngayDangKy: new Date().toISOString().substr(0, 10),
+                loaiDangKyHP: selectedLoai,
+                nhomThucHanh: selectedLich.nhomThucHanh.maNhom,
+            };
+
+            const addChiTietPhieuDangKy = await themChiTietPhieuDangKy(chiTietPhieuDangKy, accessToken, axiosJWT);
+
+            if (!!addChiTietPhieuDangKy) {
+                alert('Đăng ký môn học thành công');
+            }
+        } else {
+            let phieuDangKy = {
+                trangThai: '1',
+                sinhVien: userLogin.maSinhVien,
+                hocKy: selectedHK,
+            };
+            const addPhieuDangKy = await themPhieuDangKy(phieuDangKy, accessToken, axiosJWT);
+            if (!!addPhieuDangKy) {
+                let chiTietPhieuDangKy = {
+                    phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                    ngayDangKy: new Date().toISOString().substr(0, 10),
+                    loaiDangKyHP: selectedLoai,
+                    nhomThucHanh: selectedLich.nhomThucHanh.maNhom,
+                };
+
+                const addChiTietPhieuDangKy = await themChiTietPhieuDangKy(chiTietPhieuDangKy, accessToken, axiosJWT);
+
+                if (!!addChiTietPhieuDangKy) {
+                    alert('Đăng ký môn học thành công');
+                }
+            }
+        }
+    };
+
+    const handleSelectLHP = async (item) => {
+        let result = await getLichTheoLHP(item, accessToken, axiosJWT);
+        setSelectedLHP(item);
+        setListLichHoc(result);
+
+        if (result.length > 0) {
+            let map = new Map();
+
+            result.forEach((item) => {
+                if (!map.has(item.nhomThucHanh?.maNhom)) {
+                    map.set(item.nhomThucHanh?.maNhom, item);
+                }
+            });
+
+            let filteredList = Array.from(map.values());
+            setListLich(filteredList);
+        }
+    };
+
+    const renderDanhSachDieuKien = (item) => {
+        let arrFilterHocTruoc = item.danhSachMonHocHocTruoc.map((monHoc) => {
+            return (
+                <>
+                    {monHoc.maMonHoc} <span className="text-red-500"> (a)</span>
+                </>
+            );
+        });
+        let arrFilterTienQuyet = item.danhSachMonHocTienQuyet.map((monHoc) => {
+            return (
+                <>
+                    {monHoc.maMonHoc} <span className="text-red-500"> (b)</span>
+                </>
+            );
+        });
+        let arrFilterSongHanh = item.danhSachMonHocSongHanh.map((monHoc) => {
+            return (
+                <>
+                    {monHoc.maMonHoc} <span className="text-red-500"> (c)</span>
+                </>
+            );
+        });
+        let newArrDieuKien = [...arrFilterHocTruoc, ...arrFilterTienQuyet, ...arrFilterSongHanh];
+
+        let nodeDieuKien = [];
+        for (let i = 0; i < newArrDieuKien.length - 1; i++) {
+            let data = newArrDieuKien[i];
+            let CompDieuKien = <>{data}, </>;
+            nodeDieuKien = [...nodeDieuKien, CompDieuKien];
+        }
+        nodeDieuKien = [...nodeDieuKien, newArrDieuKien[newArrDieuKien.length - 1]];
+
+        return nodeDieuKien;
+    };
+    console.log(selectedLich);
     return (
         <div className="h-max w-full bg-gray-100 flex flex-row relative">
             <span className="w-1/12 mt-10">
@@ -140,12 +269,12 @@ function DangKyHocPhan() {
                     <div className="flex w-72 border  border-sv-blue-4 rounded-lg p-1">
                         <select
                             className="text-sv-text-2 w-full bg-white leading-tight focus:outline-none focus:shadow-outline"
-                            value={selectedOption}
-                            onChange={handleChange}
+                            value={selectedHK}
+                            onChange={handleChangeHK}
                         >
-                            {options.map((option) => (
-                                <option key={option} value={option}>
-                                    {option}
+                            {listHK?.map((option) => (
+                                <option key={option.maHocKy} value={option.maHocKy}>
+                                    {option.tenHocKy}
                                 </option>
                             ))}
                         </select>
@@ -155,8 +284,7 @@ function DangKyHocPhan() {
                             type="radio"
                             className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                             name="radio-group-loai"
-                            value="hocmoi"
-                            checked={selectedLoai === 'hocmoi'}
+                            value="LDK001"
                             onChange={handleSelectLoaiDK}
                         />
                         <span className="ml-1">Học mới</span>
@@ -166,8 +294,7 @@ function DangKyHocPhan() {
                             type="radio"
                             className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                             name="radio-group-loai"
-                            value="hoclai"
-                            checked={selectedLoai === 'hoclai'}
+                            value="LDK002"
                             onChange={handleSelectLoaiDK}
                         />
                         <span className="ml-1">Học lại</span>
@@ -177,8 +304,7 @@ function DangKyHocPhan() {
                             type="radio"
                             className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                             name="radio-group-loai"
-                            value="hoccaithien"
-                            checked={selectedLoai === 'hoccaithien'}
+                            value="LDK003"
                             onChange={handleSelectLoaiDK}
                         />
                         <span className="ml-1">Học cải thiện</span>
@@ -203,30 +329,31 @@ function DangKyHocPhan() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {listMon.map((item, index) => (
+                                {listHocPhan?.map((item, index) => (
                                     <tr
                                         className={`${
-                                            selectedMon === `${item.maHP}` ? 'bg-orange-200' : ''
+                                            selectedHP === `${item.hocPhan.maHocPhan}` ? 'bg-orange-200' : ''
                                         } hover:cursor-pointer`}
-                                        key={item.maHP + index + 'a'}
-                                        onClick={() => handleSelectMonHoc(item.maHP)}
+                                        key={item.hocPhan.maHocPhan + index + 'a'}
+                                        onClick={() => handleSelectHocPhan(item.hocPhan.maHocPhan)}
                                     >
                                         <td>
                                             <input
                                                 type="radio"
                                                 className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                                 name="radio-group-mon"
-                                                value={item.maHP}
-                                                checked={selectedMon === `${item.maHP}`}
-                                                onChange={() => handleSelectMonHoc(item.maHP)}
+                                                value={item.hocPhan.maHocPhan}
+                                                checked={selectedHP === `${item.hocPhan.maHocPhan}`}
+                                                onChange={() => handleSelectHocPhan(item.hocPhan.maHocPhan)}
                                             />
                                         </td>
                                         <td>{index + 1}</td>
-                                        <td>{item.maHP}</td>
-                                        <td>{item.tenMon}</td>
-                                        <td>{item.soTC}</td>
+                                        <td>{item.hocPhan.maHocPhan}</td>
+                                        <td>{item.hocPhan.tenHocPhan}</td>
+                                        <td>{item.hocPhan.monHoc.soTCLT + item.hocPhan.monHoc.soTCTH}</td>
+
                                         <td align="center">
-                                            {item.batBuoc ? (
+                                            {item.trangThai === 'Bắt buộc' ? (
                                                 <BsFillCheckCircleFill color="green" size={18} />
                                             ) : (
                                                 <AiFillCloseCircle color="red" size={21} />
@@ -234,13 +361,7 @@ function DangKyHocPhan() {
                                         </td>
                                         <td className="">
                                             <div className="flex flex-row items-center justify-center">
-                                                {item.dieuKien.map((dk, index) => (
-                                                    <div className="" key={dk.maMon + index + 'b'}>
-                                                        <span> {dk.maMon}</span>
-                                                        <span className="text-red-500">({dk.type})</span>
-                                                        {index > 0 ? '' : ','}
-                                                    </div>
-                                                ))}
+                                                {renderDanhSachDieuKien(item.hocPhan.monHoc)}
                                             </div>
                                         </td>
                                     </tr>
@@ -279,29 +400,29 @@ function DangKyHocPhan() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {listLop.map((item, index) => (
+                                {listLHP.map((item, index) => (
                                     <tr
                                         className={`${
-                                            selectedLop === `${item.maHP}` ? 'bg-orange-200' : ''
+                                            selectedLHP === `${item.maLopHocPhan}` ? 'bg-orange-200' : ''
                                         } hover:cursor-pointer`}
-                                        key={item.maHP + index + 'a'}
-                                        onClick={() => handleSelectLopHoc(item.maHP)}
+                                        key={item.maLopHocPhan}
+                                        onClick={() => handleSelectLHP(item.maLopHocPhan)}
                                     >
                                         <td>
                                             <input
                                                 type="radio"
                                                 className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                                 name="radio-group-lop"
-                                                value={item.maHP}
-                                                checked={selectedLop === `${item.maHP}`}
-                                                onChange={() => handleSelectLopHoc(item.maHP)}
+                                                value={item.maLopHocPhan}
+                                                checked={selectedLHP === `${item.maLopHocPhan}`}
+                                                onChange={() => handleSelectLHP(item.maLopHocPhan)}
                                             />
                                         </td>
                                         <td>{index + 1}</td>
-                                        <td>{item.maHP}</td>
-                                        <td>{item.tenLopHP}</td>
-                                        <td>{item.lopDuKien}</td>
-                                        <td align="center">{item.siSoToiDa}</td>
+                                        <td>{item.maLopHocPhan}</td>
+                                        <td>{item.hocPhan.tenHocPhan}</td>
+                                        <td>{item.tenLopHocPhan}</td>
+                                        <td align="center">{item.siSo}</td>
                                         <td className="">{item.siSoDK}</td>
                                         <td>{item.trangThai}</td>
                                     </tr>
@@ -319,6 +440,7 @@ function DangKyHocPhan() {
                         <table className={cx('table-dkhp')}>
                             <thead className="text-sv-blue-5">
                                 <tr className={cx(' bg-blue-100')}>
+                                    <th className={cx('')}></th>
                                     <th className={cx('')}>STT</th>
                                     <th className={cx('')}>Lịch học</th>
                                     <th className={cx('')}>Nhóm TH</th>
@@ -329,30 +451,42 @@ function DangKyHocPhan() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {listLichHoc.map((item, index) => (
+                                {listLich?.map((item, index) => (
                                     <tr
-                                        className={`${
-                                            selectedLichHoc === `${item.nhomTH}` || `${item.type}` === 'LT'
-                                                ? 'bg-orange-200'
-                                                : ''
+                                        className={`${selectedLich === item ? 'bg-orange-200' : ''} ${
+                                            item.nhomThucHanh.tenNhom === 'Nhóm 0' ? 'bg-red-200' : ''
                                         } hover:cursor-pointer`}
-                                        key={item.maLopHP + index + 'a'}
-                                        onClick={() => handleSelectGioHoc(item.nhomTH)}
+                                        key={item.maLich}
+                                        onClick={() => handleSelectLich(item)}
                                     >
+                                        <td>
+                                            <input
+                                                type="radio"
+                                                className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                                                name="radio-group-lop"
+                                                value={item.maLopHocPhan}
+                                                checked={selectedLich === item}
+                                                onChange={() => handleSelectLich(item)}
+                                            />
+                                        </td>
                                         <td>{index + 1}</td>
-                                        <td>{item.lichHoc}</td>
-                                        <td>{item.nhomTH}</td>
-                                        <td>{item.phong}</td>
-                                        <td align="center">{item.dayNha}</td>
-                                        <td className="">{item.giangVien}</td>
-                                        <td>{item.thoiGian}</td>
+                                        <td>{days[new Date(item.ngayHoc).getDay()] + '-' + item.caHoc.tenCaHoc}</td>
+                                        <td>{item.nhomThucHanh.tenNhom}</td>
+                                        <td>{item.phong.tenPhong}</td>
+                                        <td align="center">{item.phong.dayNha.tenDayNha}</td>
+                                        <td className="">{item.nhanVien.tenNhanVien}</td>
+                                        <td>
+                                            {convertDateFormat(item.lopHocPhan.ngayBatDau) +
+                                                '-' +
+                                                convertDateFormat(item.lopHocPhan.ngayKetThuc)}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                     <div className="w-full flex items-center justify-center p-2">
-                        <Button variant="contained" size="small">
+                        <Button variant="contained" size="small" onClick={clickDangKyHP}>
                             Đăng ký môn học
                         </Button>
                     </div>
@@ -372,9 +506,7 @@ function DangKyHocPhan() {
                                     <th className={cx('')}>Lớp học dự kiến</th>
                                     <th className={cx('')}>Số TC</th>
                                     <th className={cx('')}>Nhóm TH</th>
-                                    <th>Học phí</th>
-                                    <th>Hạn nộp</th>
-                                    <th>Thu</th>
+
                                     <th>Trạng thái ĐK</th>
                                     <th>Ngày ĐK</th>
                                     <th>Trạng thái LHP</th>
@@ -383,58 +515,48 @@ function DangKyHocPhan() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>6656543333</td>
-                                    <td>Nhập môn Lập trình</td>
-                                    <td>DHKTPM15A</td>
-                                    <td>3</td>
-                                    <td>1</td>
-                                    <td>1,800,000</td>
-                                    <td>2/3/2022</td>
-                                    <td align="center">
-                                        <BsFillCheckCircleFill color="green" size={18} />
-                                    </td>
-                                    <td>Đăng ký mới</td>
-                                    <td>2/2/2022</td>
-                                    <td>Đã khóa</td>
-                                    <td className="p-2">
-                                        <Button variant="contained" size="small">
-                                            Xem
-                                        </Button>
-                                    </td>
-                                    <td className="p-2">
-                                        <Button variant="outlined" color="error" size="small">
-                                            Hủy
-                                        </Button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>6336565433</td>
-                                    <td>Những nguyên lý cơ bản của chủ nghĩa Mac-Lenin</td>
-                                    <td>DHKTPM15A</td>
-                                    <td>3</td>
-                                    <td>1</td>
-                                    <td>1,800,000</td>
-                                    <td>2/3/2022</td>
-                                    <td align="center">
-                                        <BsFillCheckCircleFill color="green" size={18} />
-                                    </td>
-                                    <td>Đăng ký mới</td>
-                                    <td>2/2/2022</td>
-                                    <td>Đã khóa</td>
-                                    <td className="p-2">
-                                        <Button variant="contained" size="small">
-                                            Xem
-                                        </Button>
-                                    </td>
-                                    <td className="p-2">
-                                        <Button variant="outlined" color="error" size="small">
-                                            Hủy
-                                        </Button>
-                                    </td>
-                                </tr>
+                                {listDK?.map((item, index) => (
+                                    <tr
+                                    // className={`${selectedLich === item ? 'bg-orange-200' : ''} ${
+                                    //     item.nhomThucHanh.tenNhom === 'Nhóm 0' ? 'bg-red-200' : ''
+                                    // } hover:cursor-pointer`}
+                                    // key={item.maLich}
+                                    // onClick={() => handleSelectLich(item)}
+                                    >
+                                        {/* <td>
+                                            <input
+                                                type="radio"
+                                                className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                                                name="radio-group-lop"
+                                                value={item.maLopHocPhan}
+                                                checked={selectedLich === item}
+                                                onChange={() => handleSelectLich(item)}
+                                            />
+                                        </td> */}
+                                        <td>{index + 1}</td>
+                                        <td>{item.nhomThucHanh.lopHocPhan.maLopHocPhan}</td>
+                                        <td>{item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.tenMonHoc}</td>
+                                        <td>{item.nhomThucHanh.lopHocPhan.tenLopHocPhan}</td>
+                                        <td>
+                                            {item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCLT +
+                                                item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCTH}
+                                        </td>
+                                        <td>{item.nhomThucHanh.tenNhom}</td>
+                                        <td>{item.loaiDangKyHP.tenLoaiDKHP}</td>
+                                        <td>{convertDateFormat(item.ngayDangKy)}</td>
+                                        <td>{item.nhomThucHanh.lopHocPhan.trangThai}</td>
+                                        <td className="p-2">
+                                            <Button variant="contained" size="small">
+                                                Xem
+                                            </Button>
+                                        </td>
+                                        <td className="p-2">
+                                            <Button variant="outlined" color="error" size="small">
+                                                Hủy
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

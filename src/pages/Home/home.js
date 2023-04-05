@@ -12,12 +12,13 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { getHocPhanTheoHocKy } from '../../service/hocPhanService';
+import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
 ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
     const userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
-    const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
+
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
@@ -194,11 +195,11 @@ function Home() {
                                                         value={selectedOption}
                                                         onChange={handleChange}
                                                     >
-                                                        {options.map((option) => (
-                                                            <option key={option} value={option}>
+                                                        {/* {options.map((option, index) => (
+                                                            <option key={index} value={option}>
                                                                 {option}
                                                             </option>
-                                                        ))}
+                                                        ))} */}
                                                     </select>
                                                 </div>
                                             </div>

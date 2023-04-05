@@ -163,7 +163,7 @@ function ChuongTrinhKhung() {
                                     </tr>
                                 </thead>
 
-                                {listHocKy.map((item, index) => (
+                                {listHocKy?.map((item, index) => (
                                     <tbody key={item.maHocKy + index}>
                                         <tr
                                             className=" bg-orange-100 hover:cursor-pointer font-bold text-sv-blue-5 transition delay-700"
