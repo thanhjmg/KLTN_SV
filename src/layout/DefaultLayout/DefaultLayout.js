@@ -19,13 +19,13 @@ function DefaultLayout({ children }) {
     const searchRef = useRef();
     const navigate = useNavigate();
     const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
-    console.log(userLoginData);
+    //console.log(userLoginData);
     var accessToken = userLoginData?.accessToken;
     if (userLoginData) {
         var axiosJWT = getAxiosJWT(dispatch, userLoginData);
     }
 
-    console.log(axiosJWT);
+    //console.log(axiosJWT);
 
     const [user, setUser] = useState();
 
@@ -38,7 +38,7 @@ function DefaultLayout({ children }) {
         getUser();
     }, []);
 
-    console.log(user);
+    //console.log(user);
     dispatch(userLogin(user));
 
     if (userLoginData === null) {

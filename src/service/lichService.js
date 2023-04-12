@@ -1,3 +1,20 @@
+export const getLichTheoThoiGian = async (maSV, ngayBD, ngayKT, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lich/sv', {
+            params: {
+                maSV: maSV,
+                ngayBD: ngayBD,
+                ngayKT: ngayKT,
+            },
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        return res.data;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
 export const getLichTheoLHP = async (maLHP, accessToken, axiosJWT) => {
     try {
         const res = await axiosJWT.get('/lich/lhp', {

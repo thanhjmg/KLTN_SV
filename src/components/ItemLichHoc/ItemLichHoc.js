@@ -5,9 +5,9 @@ function ItemLichHoc({ mon, lop, tiet, phong, gv, note, type }) {
     var pause =
         ' before:absolute before:left-0 before:top-11 before:w-32 before:h-4 before:bg-red-500 before:rotate-45';
 
-    if (!!type && type === 'lichthi') bg = 'bg-orange-300';
+    if (!!type && type === 'Lịch thi') bg = 'bg-orange-300';
     else if (!!type && type === 'online') bg = 'bg-blue-400';
-    else if (!!type && type === 'huy') bg = 'bg-red-400';
+    else if (!!type && type === 'Tạm ngưng') bg = 'bg-red-400';
 
     return (
         <div className={'rounded-xl border relative border-gray-500 m-2 p-2 ' + bg}>
