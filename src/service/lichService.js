@@ -27,3 +27,23 @@ export const themLich = async (lich, accessToken, axiosJWT) => {
         return null;
     }
 };
+
+export const getChiTietLichByMaSinhVienAndLopHP = async (maSinhVien, maLHP, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lich/chitietlich/sinhvien-lophocphan', {
+            params: {
+                maSinhVien: maSinhVien,
+                maLHP: maLHP,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};

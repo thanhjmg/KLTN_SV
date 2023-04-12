@@ -11,24 +11,27 @@ import { useDispatch, useSelector } from 'react-redux';
 function ThongTinSinhVien() {
     // const cx = classNames.bind(style);
     let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
-    const ngaySinhFormat = () => {
-        let dateString = userLogin?.ngaySinh;
-        let dateParts = dateString.split('-');
+    console.log(userLogin);
+    // const ngaySinhFormat = () => {
+    //     if (userLogin.ngaySinh !== null) {
+    //         let dateString = userLogin?.ngaySinh;
+    //         let dateParts = dateString?.split('-');
 
-        // Tạo đối tượng Date mới từ chuỗi ban đầu
-        let dateObject = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+    //         // Tạo đối tượng Date mới từ chuỗi ban đầu
+    //         let dateObject = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-        // Lấy ngày, tháng, năm từ đối tượng Date
-        let day = dateObject.getDate().toString().padStart(2, '0');
-        let month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
-        let year = dateObject.getFullYear();
+    //         // Lấy ngày, tháng, năm từ đối tượng Date
+    //         let day = dateObject.getDate().toString().padStart(2, '0');
+    //         let month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
+    //         let year = dateObject.getFullYear();
 
-        // Ghép lại thành chuỗi với định dạng "dd-mm-yyyy"
-        let formattedDate = `${day}-${month}-${year}`;
-        // console.log(formattedDate);
-        return formattedDate;
-    };
-    ngaySinhFormat();
+    //         // Ghép lại thành chuỗi với định dạng "dd-mm-yyyy"
+    //         let formattedDate = `${day}-${month}-${year}`;
+    //         // console.log(formattedDate);
+    //         return formattedDate;
+    //     }
+    // };
+    // ngaySinhFormat();
     return (
         <>
             <div className="flex flex-row w-full h-max bg-gray-200 pt-3">
@@ -159,7 +162,7 @@ function ThongTinSinhVien() {
                                         </div>
                                         <div className="flex text-sm ml-0 m-5 ">
                                             <p className="mr-2 text-sv-text-1 ">Khóa học:</p>
-                                            <p className="text-sv-text-2 font-bold">{userLogin?.khoaHoc}</p>
+                                            <p className="text-sv-text-2 font-bold">{userLogin?.khoaHoc.tenKhoaHoc}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -171,7 +174,7 @@ function ThongTinSinhVien() {
                                 <div className="w-4/12">
                                     <div className="flex text-sm ml-0 m-5 ">
                                         <p className="mr-2 text-sv-text-1 ">Ngày sinh:</p>
-                                        <p className="text-sv-text-2 font-bold">{ngaySinhFormat()}</p>
+                                        <p className="text-sv-text-2 font-bold">{}</p>
                                     </div>
                                     <div className="flex text-sm ml-0 m-5 ">
                                         <p className="mr-2 text-sv-text-1 ">Số CCCD:</p>

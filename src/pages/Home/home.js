@@ -3,7 +3,7 @@ import logo_iuh from './../../images/logo_iuh.png';
 import iuh from './../../images/iuh.jpg';
 import { FaCalendarAlt, FaCalendarCheck, FaRegChartBar, FaBuffer, FaList } from 'react-icons/fa';
 import ItemMenuHome from '../../components/ItemMenuHome';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import config from '../../configRoutes';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
@@ -14,11 +14,70 @@ import { Doughnut } from 'react-chartjs-2';
 import { useDispatch, useSelector } from 'react-redux';
 import { getHocPhanTheoHocKy } from '../../service/hocPhanService';
 import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
+import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
+import {
+    getPhieuDKByHocKyMaSinhVien,
+    themPhieuDangKy,
+    themChiTietPhieuDangKy,
+    getChiTietPhieuDKByHocKyAndSinhVien,
+} from '../../service/phieuDKHP';
 ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
+    const dispatch = useDispatch();
+    const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
     const userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    var accessToken = userLoginData.accessToken;
+    var axiosJWT = getAxiosJWT(dispatch, userLoginData);
+    const [listHK, setListHK] = useState([]);
+    const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
+    useEffect(() => {
+        const getHocKyByKhoaHoc = async () => {
+            try {
+                if (!!userLogin.khoaHoc) {
+                    const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    var list = await getHocKyTheoKhoaHoc(
+                        `${startYear}-08-01`,
+                        `${endYear}-06-01`,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    setListHK(list);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getHocKyByKhoaHoc();
+    }, [userLogin]);
 
+    const [selectedHK, setSelectedHK] = useState('HK005');
+    console.log(selectedHK);
+    useEffect(() => {
+        const getLopHocPhanByHK = async () => {
+            let getLopHocByHK = await getChiTietPhieuDKByHocKyAndSinhVien(
+                userLogin.maSinhVien,
+                selectedHK,
+                accessToken,
+                axiosJWT,
+            );
+            console.log(getLopHocByHK);
+            const uniqueListHP = getLopHocByHK.filter((item, index, self) => {
+                return (
+                    item.nhomThucHanh.tenNhom === 'Nhóm 0' && // Thêm điều kiện chỉ lấy nhóm thực hành có tenNhom là 'Nhóm 0'
+                    self.findIndex(
+                        (i) =>
+                            i.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                            item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                    ) === index
+                );
+            });
+            setListHocPhanByHK(uniqueListHP);
+        };
+        getLopHocPhanByHK();
+    }, [selectedHK]);
+    console.log(listLopHocPhanByHK);
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
@@ -38,6 +97,9 @@ function Home() {
     function handleChange(event) {
         setSelectedOption(event.target.value);
     }
+    const handleChangeHK = (event) => {
+        setSelectedHK(event.target.value);
+    };
     const handleKetQuaHocTap = async () => {
         navigate(config.routeConfig.ketQuaHocTap);
     };
@@ -237,12 +299,12 @@ function Home() {
                                         <div className="flex items-center border  border-sv-blue-4 rounded">
                                             <select
                                                 className="text-sv-text-2 border  border-sv-blue-4 "
-                                                value={selectedOption}
-                                                onChange={handleChange}
+                                                value={selectedHK}
+                                                onChange={handleChangeHK}
                                             >
-                                                {options.map((option) => (
-                                                    <option key={option} value={option}>
-                                                        {option}
+                                                {listHK?.map((option) => (
+                                                    <option key={option.maHocKy} value={option.maHocKy}>
+                                                        {option.tenHocKy}
                                                     </option>
                                                 ))}
                                             </select>
@@ -252,24 +314,22 @@ function Home() {
                                         <div>Môn học/Học phần</div>
                                         <div>Tín chỉ</div>
                                     </div>
-                                    <div className="w-full flex flex-row border-t-2 text-sm mt-3 text-sv-text-1">
-                                        <div className="w-10/12">
-                                            <div className="text-sv-blue-4 font-bold">1213456</div>
-                                            <div>Lập trình hướng đối tượng</div>
+                                    {listLopHocPhanByHK?.map((item, index) => (
+                                        <div className="w-full flex flex-row border-t-2 text-sm mt-3 text-sv-text-1">
+                                            <div className="w-10/12">
+                                                <div className="text-sv-blue-4 font-bold">
+                                                    {item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan}
+                                                </div>
+                                                <div>{item.nhomThucHanh.lopHocPhan.hocPhan.tenHocPhan}</div>
+                                            </div>
+                                            <div className="w-2/12 flex justify-center items-center">
+                                                <p>
+                                                    {item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCLT +
+                                                        item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCTH}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="w-2/12 flex justify-center items-center">
-                                            <p>1</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-full flex flex-row border-t-2 text-sm mt-3 text-sv-text-1">
-                                        <div className="w-10/12">
-                                            <div className="text-sv-blue-4 font-bold">1213456</div>
-                                            <div>Lập trình hướng đối tượng</div>
-                                        </div>
-                                        <div className="w-2/12 flex justify-center items-center">
-                                            <p>1</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
