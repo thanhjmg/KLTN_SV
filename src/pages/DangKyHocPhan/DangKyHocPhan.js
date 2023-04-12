@@ -465,7 +465,7 @@ function DangKyHocPhan() {
 
         return nodeDieuKien;
     };
-
+    //console.log(listLich);
     return (
         <div className="h-max w-full bg-gray-100 flex flex-row relative">
             <span className="w-1/12 mt-10">
@@ -699,9 +699,9 @@ function DangKyHocPhan() {
                                         <td align="center">{item.phong.dayNha.tenDayNha}</td>
                                         <td className="">{item.nhanVien.tenNhanVien}</td>
                                         <td>
-                                            {convertDateFormat(item.lopHocPhan.ngayBatDau) +
+                                            {convertDateFormat(item.nhomThucHanh?.lopHocPhan?.ngayBatDau) +
                                                 '-' +
-                                                convertDateFormat(item.lopHocPhan.ngayKetThuc)}
+                                                convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayKetThuc)}
                                         </td>
                                     </tr>
                                 ))}
@@ -834,9 +834,9 @@ function DangKyHocPhan() {
                                         <td>{item.phong.dayNha.tenDayNha}</td>
                                         <td>{item.nhanVien.tenNhanVien}</td>
                                         <td>
-                                            {convertDateFormat(item.lopHocPhan.ngayBatDau) +
+                                            {convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayBatDau) +
                                                 '-' +
-                                                convertDateFormat(item.lopHocPhan.ngayKetThuc)}
+                                                convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayKetThuc)}
                                         </td>
                                     </tr>
                                 ))}
