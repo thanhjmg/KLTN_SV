@@ -12,8 +12,15 @@ import { FaUserGraduate, FaUserTie, FaUniversity, FaAlignJustify } from 'react-i
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import { findHocPhanByMaSinhVienAndMaNganh } from '~/service/hocPhanService';
-import { getLopHocPhanMaHP } from '../../service/lopHocPhanService';
-import { getLichTheoLHP, themLich, getChiTietLichByMaSinhVienAndLopHP } from '~/service/lichService';
+import { countSinhVienByNTH } from '../../service/sinhVienService';
+import {
+    getLopHocPhanMaHP,
+    getBangDiemTheoSVAndMH,
+    getLopHocPhanByMaLHP,
+    updateLopHocPhan,
+    getBangDiemKhongDat,
+} from '../../service/lopHocPhanService';
+import { getLichTheoLHP, themLich, getChiTietLichByMaSinhVienAndLopHP, getLichDaDKTheoHK } from '~/service/lichService';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
 import Box from '@mui/material/Box';
 import { FaRegWindowClose } from 'react-icons/fa';
@@ -48,105 +55,188 @@ function DangKyHocPhan() {
     const [listLich, setListLich] = useState([]);
     const [listDaDK, setListDaDK] = useState([]);
     const [open, setOpen] = useState(false);
+    const [listLichTheoHK, setListLichTheoHK] = useState();
+    const [checkTrung, setCheckTrung] = useState(false);
+    const [selectedLoai, setSelectedLoai] = useState('LDK001');
+    var countDK = 0;
     const handleClose = () => {
         setOpen(false);
     };
+
     useEffect(() => {
         let isMounted = true;
 
         const getALLHocPhan = async () => {
-            try {
-                let getHocPhan = await findHocPhanByMaSinhVienAndMaNganh(
-                    userLogin?.maSinhVien,
-                    userLogin?.lopHoc.nganhHoc.maNganh,
-                    accessToken,
-                    axiosJWT,
-                );
-
-                if (!isMounted) {
-                    return; // component unmounted, aborting
-                }
-
-                let getTatCaCTPhieuDKBySinhvien = await getChiTietPhieuDKByMaSinhVien(
-                    userLogin?.maSinhVien,
-                    accessToken,
-                    axiosJWT,
-                );
-                const listALLChiTietPhieu = getTatCaCTPhieuDKBySinhvien.filter(
-                    (item) => item.nhomThucHanh?.tenNhom === 'Nhóm 0',
-                );
-
-                let filteredArr = [...getHocPhan];
-
-                for (let i = 0; i < listALLChiTietPhieu.length; i++) {
-                    filteredArr = filteredArr.filter(
-                        (item) =>
-                            item.hocPhan.maHocPhan !== listALLChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+            if (selectedLoai === 'LDK002') {
+                const BangDiemKhongDat = async () => {
+                    const bangDiemKhongDat = await getBangDiemKhongDat(userLogin.maSinhVien, accessToken, axiosJWT);
+                    setListHocPhan(bangDiemKhongDat);
+                    var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
                     );
-                }
-
-                if (!isMounted) {
-                    return; // component unmounted, aborting
-                }
-
-                setListHocPhan(filteredArr);
-                var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
-                    userLogin.maSinhVien,
-                    selectedHK,
-                    accessToken,
-                    axiosJWT,
-                );
-                const filteredList = [];
-                let dk = null;
-                if (listChiTietPhieu.length === 1) {
-                    setListDaDK(listChiTietPhieu);
-                } else if (listChiTietPhieu.length > 1) {
+                    const filteredList = [];
+                    let filteredArr = [...bangDiemKhongDat];
                     for (let i = 0; i < listChiTietPhieu.length; i++) {
-                        let dk = listChiTietPhieu[i]; // Gán giá trị ban đầu của dk là phần tử i
-                        let isDuplicate = false; // Đánh dấu xem có bị trùng hay không
-
-                        // Duyệt qua các phần tử còn lại trong danh sách
-                        for (let j = i + 1; j < listChiTietPhieu.length; j++) {
-                            // Kiểm tra điều kiện lọc
-                            if (
-                                listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
-                                    listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
-                                listChiTietPhieu[j].nhomThucHanh.tenNhom !== 'Nhóm 0'
-                            ) {
-                                dk = listChiTietPhieu[j]; // Nếu thỏa điều kiện, gán lại giá trị của dk
-                                isDuplicate = true; // Đánh dấu là bị trùng
-                            } else if (
-                                listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
-                                    listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
-                                listChiTietPhieu[i].nhomThucHanh.tenNhom !== 'Nhóm 0'
-                            ) {
-                                dk = listChiTietPhieu[i]; // Nếu thỏa điều kiện, gán lại giá trị của dk
-                                isDuplicate = true; // Đánh dấu là bị trùng
-                            }
-                        }
-
-                        if (!isDuplicate) {
-                            dk = listChiTietPhieu[i]; // Nếu không bị trùng, gán lại giá trị của dk
-                        }
-
-                        filteredList.push(dk); // Sau khi duyệt qua tất cả các phần tử j, đẩy giá trị dk vào danh sách lọc
-                    }
-                    // console.log(filteredList);
-                    const uniqueListDK = filteredList.filter((item, index, self) => {
-                        // Lọc các mục có giá trị thuộc tính 'maPhieuDangKy' duy nhất
-                        return (
-                            self.findIndex(
-                                (i) =>
-                                    i.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
-                                    item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
-                            ) === index
+                        filteredArr = filteredArr.filter(
+                            (item) =>
+                                item.hocPhan.maHocPhan !==
+                                listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
                         );
-                    });
+                    }
 
-                    setListDaDK(uniqueListDK);
+                    if (!isMounted) {
+                        return; // component unmounted, aborting
+                    }
+
+                    setListHocPhan(filteredArr);
+                    let dk = null;
+                    if (listChiTietPhieu.length === 1) {
+                        setListDaDK(listChiTietPhieu);
+                    } else if (listChiTietPhieu.length > 1) {
+                        for (let i = 0; i < listChiTietPhieu.length; i++) {
+                            let dk = listChiTietPhieu[i]; // Gán giá trị ban đầu của dk là phần tử i
+                            let isDuplicate = false; // Đánh dấu xem có bị trùng hay không
+
+                            // Duyệt qua các phần tử còn lại trong danh sách
+                            for (let j = i + 1; j < listChiTietPhieu.length; j++) {
+                                // Kiểm tra điều kiện lọc
+                                if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[j].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[j]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                } else if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[i].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[i]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                }
+                            }
+
+                            if (!isDuplicate) {
+                                dk = listChiTietPhieu[i]; // Nếu không bị trùng, gán lại giá trị của dk
+                            }
+
+                            filteredList.push(dk); // Sau khi duyệt qua tất cả các phần tử j, đẩy giá trị dk vào danh sách lọc
+                        }
+                        // console.log(filteredList);
+                        const uniqueListDK = filteredList.filter((item, index, self) => {
+                            // Lọc các mục có giá trị thuộc tính 'maPhieuDangKy' duy nhất
+                            return (
+                                self.findIndex(
+                                    (i) =>
+                                        i.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                                ) === index
+                            );
+                        });
+
+                        setListDaDK(uniqueListDK);
+                    }
+                };
+                BangDiemKhongDat();
+            } else {
+                try {
+                    let getHocPhan = await findHocPhanByMaSinhVienAndMaNganh(
+                        userLogin?.maSinhVien,
+                        userLogin?.lopHoc.nganhHoc.maNganh,
+                        accessToken,
+                        axiosJWT,
+                    );
+
+                    if (!isMounted) {
+                        return; // component unmounted, aborting
+                    }
+
+                    let getTatCaCTPhieuDKBySinhvien = await getChiTietPhieuDKByMaSinhVien(
+                        userLogin?.maSinhVien,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    const listALLChiTietPhieu = getTatCaCTPhieuDKBySinhvien.filter(
+                        (item) => item.nhomThucHanh?.tenNhom === 'Nhóm 0',
+                    );
+
+                    let filteredArr = [...getHocPhan];
+
+                    for (let i = 0; i < listALLChiTietPhieu.length; i++) {
+                        filteredArr = filteredArr.filter(
+                            (item) =>
+                                item.hocPhan.maHocPhan !==
+                                listALLChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                        );
+                    }
+
+                    if (!isMounted) {
+                        return; // component unmounted, aborting
+                    }
+
+                    setListHocPhan(filteredArr);
+                    var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    const filteredList = [];
+                    let dk = null;
+                    if (listChiTietPhieu.length === 1) {
+                        setListDaDK(listChiTietPhieu);
+                    } else if (listChiTietPhieu.length > 1) {
+                        for (let i = 0; i < listChiTietPhieu.length; i++) {
+                            let dk = listChiTietPhieu[i]; // Gán giá trị ban đầu của dk là phần tử i
+                            let isDuplicate = false; // Đánh dấu xem có bị trùng hay không
+
+                            // Duyệt qua các phần tử còn lại trong danh sách
+                            for (let j = i + 1; j < listChiTietPhieu.length; j++) {
+                                // Kiểm tra điều kiện lọc
+                                if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[j].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[j]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                } else if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[i].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[i]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                }
+                            }
+
+                            if (!isDuplicate) {
+                                dk = listChiTietPhieu[i]; // Nếu không bị trùng, gán lại giá trị của dk
+                            }
+
+                            filteredList.push(dk); // Sau khi duyệt qua tất cả các phần tử j, đẩy giá trị dk vào danh sách lọc
+                        }
+                        // console.log(filteredList);
+                        const uniqueListDK = filteredList.filter((item, index, self) => {
+                            // Lọc các mục có giá trị thuộc tính 'maPhieuDangKy' duy nhất
+                            return (
+                                self.findIndex(
+                                    (i) =>
+                                        i.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                                ) === index
+                            );
+                        });
+
+                        setListDaDK(uniqueListDK);
+                    }
+                } catch (error) {
+                    console.log(error);
                 }
-            } catch (error) {
-                console.log(error);
             }
         };
 
@@ -155,7 +245,11 @@ function DangKyHocPhan() {
         return () => {
             isMounted = false; // set isMounted to false when component unmounts
         };
-    }, [listDK]);
+    }, [listDK, selectedLoai]);
+
+    // useEffect(() => {
+
+    // }, [listDK]);
 
     useEffect(() => {
         const getHocKyByKhoaHoc = async () => {
@@ -199,14 +293,95 @@ function DangKyHocPhan() {
 
     // console.log(listDK);
     const handleSelectHocPhan = async (item) => {
+        // Khởi tạo giá trị ban đầu cho biến listDiem là một mảng rỗng
+
         console.log(item);
+
+        // Các bước xử lý khác
+        // setCheckTrung(false);
         setListLHP([]);
         setListLich([]);
-
-        let result = await getLopHocPhanMaHP(item, accessToken, axiosJWT);
         setSelectedHP(item);
-        setListLHP(result);
+
+        if (item?.hocPhan?.monHoc.danhSachMonHocHocTruoc.length > 0) {
+            // Khởi tạo một mảng để lưu trữ kết quả trả về từ các lần gọi hàm getBangDiemTheoSVAndMH()
+            let bangDiems = [];
+
+            // Lặp qua danh sách các môn học trước
+            for (let i = 0; i < item.hocPhan.monHoc.danhSachMonHocHocTruoc.length; i++) {
+                // Gọi hàm getBangDiemTheoSVAndMH() và sử dụng async/await để đợi kết quả trả về
+                const bangDiem = await getBangDiemTheoSVAndMH(
+                    userLogin.maSinhVien,
+                    item.hocPhan.monHoc.danhSachMonHocHocTruoc[i].maMonHoc,
+                    accessToken,
+                    axiosJWT,
+                );
+                // Lưu trữ kết quả trả về vào mảng bangDiems
+                bangDiems.push(bangDiem);
+            }
+
+            // Log giá trị của mảng bangDiems sau khi vòng for đã kết thúc
+            console.log(bangDiems);
+
+            // Đếm số lượng môn học chưa có điểm giữa kỳ
+            let count = 0;
+            for (let i = 0; i < bangDiems.length; i++) {
+                console.log(bangDiems[i][0]?.giuaKy);
+
+                if (!bangDiems[i][0]?.giuaKy) {
+                    count++;
+                }
+            }
+
+            // Nếu có ít nhất 1 môn học chưa có điểm giữa kỳ, thông báo không cho phép
+            if (count > 0) {
+                countDK++;
+            }
+        }
+        if (item?.hocPhan?.monHoc.danhSachMonHocTienQuyet.length > 0) {
+            // Khởi tạo một mảng để lưu trữ kết quả trả về từ các lần gọi hàm getBangDiemTheoSVAndMH()
+            let bangDiems = [];
+
+            // Lặp qua danh sách các môn học trước
+            for (let i = 0; i < item.hocPhan.monHoc.danhSachMonHocTienQuyet.length; i++) {
+                // Gọi hàm getBangDiemTheoSVAndMH() và sử dụng async/await để đợi kết quả trả về
+                const bangDiem = await getBangDiemTheoSVAndMH(
+                    userLogin.maSinhVien,
+                    item.hocPhan.monHoc.danhSachMonHocTienQuyet[i].maMonHoc,
+                    accessToken,
+                    axiosJWT,
+                );
+                // Lưu trữ kết quả trả về vào mảng bangDiems
+                bangDiems.push(bangDiem);
+            }
+
+            // Log giá trị của mảng bangDiems sau khi vòng for đã kết thúc
+            console.log(bangDiems);
+
+            // Đếm số lượng môn học chưa có điểm giữa kỳ
+            let count = 0;
+            for (let i = 0; i < bangDiems.length; i++) {
+                console.log(bangDiems[i][0]?.giuaKy);
+
+                if (bangDiems[i][0]?.trangThai !== 'Qua môn') {
+                    count++;
+                }
+            }
+
+            // Nếu có ít nhất 1 môn học chưa có điểm giữa kỳ, thông báo không cho phép
+            if (count > 0) {
+                countDK++;
+            }
+        }
+        if (countDK > 0) {
+            alert('Bạn chưa đủ điều kiện để đăng ký môn học này');
+        } else {
+            let result = await getLopHocPhanMaHP(item?.hocPhan?.maHocPhan, accessToken, axiosJWT);
+            setListLHP(result);
+            console.log(listLHP);
+        }
     };
+
     function convertDateFormat(dateString) {
         let date = new Date(dateString);
         let day = date.getDate().toString().padStart(2, '0');
@@ -215,7 +390,6 @@ function DangKyHocPhan() {
         return `${day}/${month}/${year}`;
     }
 
-    const [selectedLoai, setSelectedLoai] = useState('LDK001');
     const [selectedMon, setSelectedMon] = useState('');
     const [selectedLop, setSelectedLop] = useState('');
     const [selectedLHP, setSelectedLHP] = useState('');
@@ -301,7 +475,26 @@ function DangKyHocPhan() {
             }
             console.log(HuyLHPDK.length);
             if (HuyLHPDK.length === 0) {
-                alert('Hủy thành công');
+                console.log(item);
+                const getLopHocPhan = await getLopHocPhanByMaLHP(
+                    item.nhomThucHanh.lopHocPhan.maLopHocPhan,
+                    accessToken,
+                    axiosJWT,
+                );
+
+                const lhp = {
+                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                    siSo: getLopHocPhan.siSo,
+                    siSoThuc: getLopHocPhan.siSoThuc - 1,
+                    ngayBatDau: getLopHocPhan.ngayBatDau,
+                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                    trangThai: getLopHocPhan.trangThai,
+                    hocPhan: selectedHP.hocPhan?.maHocPhan,
+                };
+
+                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                if (!!updateLHP) alert('Hủy thành công');
                 var listChiTietPhieuLT = await getChiTietPhieuDKByHocKyAndSinhVien(
                     userLogin.maSinhVien,
                     selectedHK,
@@ -324,14 +517,40 @@ function DangKyHocPhan() {
     function Menu1() {
         showMenu ? setShowMenu(false) : setShowMenu(true);
     }
-
-    const handleSelectLich = (item) => {
+    const handleSelectLich = async (item) => {
         setSelectedLich(item);
+        const soLuongSVTheoNTH = await countSinhVienByNTH(item.nhomThucHanh.maNhom, accessToken, axiosJWT);
+        if (soLuongSVTheoNTH === item.nhomThucHanh.lopHocPhan.soLuongSV) {
+            alert('Nhóm này đã đủ số lượng sinh viên đăng kí');
+            setSelectedLich('');
+        }
     };
     const handleChangeHK = (event) => {
         setSelectedHK(event.target.value);
     };
 
+    const handleSelectLHP = async (item) => {
+        setSelectedLHP(item);
+        const getLopHocPhan = await getLopHocPhanByMaLHP(item, accessToken, axiosJWT);
+        if (getLopHocPhan.siSoThuc < getLopHocPhan.siSo) {
+            let result = await getLichTheoLHP(item, accessToken, axiosJWT);
+
+            if (result.length > 0) {
+                let map = new Map();
+                result.forEach((item) => {
+                    if (!map.has(item.nhomThucHanh?.maNhom)) {
+                        map.set(item.nhomThucHanh?.maNhom, item);
+                    }
+                });
+                let filteredList = Array.from(map.values());
+                setListLich(filteredList);
+                await Promise.resolve(); // Sử dụng Promise.resolve() để đảm bảo việc cập nhật listLich được hoàn tất trước khi hàm handleSelectLHP hoàn tất
+            }
+        } else if (getLopHocPhan.siSoThuc >= getLopHocPhan.siSo) {
+            alert('Lớp học phần này đã đủ số lượng đăng ký');
+        }
+    };
+    console.log(listLich);
     const clickDangKyHP = async () => {
         let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
         console.log(getPhieuDangKy.length);
@@ -346,7 +565,7 @@ function DangKyHocPhan() {
         }
 
         getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-        if (listLich.length > 1 && selectedLich.length === 0) {
+        if (listLich.length > 1 && (selectedLich.length === 0 || selectedLich.nhomThucHanh.tenNhom === 'Nhóm 0')) {
             alert('Vui lòng chọn nhóm thực hành');
         } else if (listLich.length === 1) {
             let chiTietPhieuDangKyLT = {
@@ -357,6 +576,7 @@ function DangKyHocPhan() {
             };
             console.log(chiTietPhieuDangKyLT);
             var addChiTietPhieuDangKyLT = await themChiTietPhieuDangKy(chiTietPhieuDangKyLT, accessToken, axiosJWT);
+
             if (!!addChiTietPhieuDangKyLT) {
                 var listChiTietPhieuLT2 = await getChiTietPhieuDKByHocKyAndSinhVien(
                     userLogin.maSinhVien,
@@ -369,7 +589,23 @@ function DangKyHocPhan() {
 
                 setListLHP([]);
                 setListLich([]);
-                alert('Đăng ký học phần thành công!!');
+                const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+
+                const lhp = {
+                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                    siSo: getLopHocPhan.siSo,
+                    siSoThuc: getLopHocPhan.siSoThuc + 1,
+                    ngayBatDau: getLopHocPhan.ngayBatDau,
+                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                    trangThai: getLopHocPhan.trangThai,
+                    hocPhan: selectedHP.hocPhan.maHocPhan,
+                };
+
+                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                if (!!updateLHP) {
+                    alert('Đăng ký học phần thành công!!');
+                }
             }
         } else {
             for (let i = 0; i < listLich.length; i++) {
@@ -406,31 +642,121 @@ function DangKyHocPhan() {
                 setListDK(listChiTietPhieu1);
                 setListLHP([]);
                 setListLich([]);
-                alert('Đăng ký học phần thành công!!');
+                const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+
+                const lhp = {
+                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                    siSo: getLopHocPhan.siSo,
+                    siSoThuc: getLopHocPhan.siSoThuc + 1,
+                    ngayBatDau: getLopHocPhan.ngayBatDau,
+                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                    trangThai: getLopHocPhan.trangThai,
+                    hocPhan: selectedHP.hocPhan.maHocPhan,
+                };
+
+                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                if (!!updateLHP) {
+                    alert('Đăng ký học phần thành công!!');
+                }
             }
         }
     };
 
-    const handleSelectLHP = async (item) => {
-        let result = await getLichTheoLHP(item, accessToken, axiosJWT);
-
-        setSelectedLHP(item);
-        setListLichHoc(result);
-
-        if (result.length > 0) {
-            let map = new Map();
-
-            result.forEach((item) => {
-                if (!map.has(item.nhomThucHanh?.maNhom)) {
-                    map.set(item.nhomThucHanh?.maNhom, item);
-                }
-            });
-
-            let filteredList = Array.from(map.values());
-            setListLich(filteredList);
-        }
+    const handleCheckboxChange = async (e) => {
+        setCheckTrung(e.target.checked);
     };
 
+    useEffect(() => {
+        // Kiểm tra giá trị mới của state check sau khi đã được cập nhật
+        setListLHP([]);
+        const maLHP = [];
+        console.log(selectedHP);
+
+        const listKhongTrung = [];
+        if (checkTrung === true) {
+            for (let i = 0; i < listLHP?.length; i++) {
+                console.log(listLHP[i].maLopHocPhan);
+                maLHP.push(listLHP[i].maLopHocPhan);
+            }
+            console.log(maLHP);
+
+            const LocLich = async (maLHP) => {
+                let result = await getLichTheoLHP(maLHP, accessToken, axiosJWT);
+                if (result.length > 0) {
+                    let map = new Map();
+
+                    result.forEach((item) => {
+                        if (!map.has(item.nhomThucHanh?.maNhom)) {
+                            map.set(item.nhomThucHanh?.maNhom, item);
+                        }
+                    });
+
+                    let filteredList = Array.from(map.values());
+                    console.log(filteredList);
+
+                    var listALLLichByHK = await getLichDaDKTheoHK(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    if (listALLLichByHK.length > 0) {
+                        let map = new Map();
+                        let loc = new Map();
+
+                        listALLLichByHK.forEach((item) => {
+                            if (!map.has(item.nhomThucHanh?.maNhom)) {
+                                map.set(item.nhomThucHanh?.maNhom, item);
+                            }
+                        });
+
+                        const lichHoc = Array.from(map.values());
+
+                        // It then iterates over the filteredList array and the lichHoc array to compare their properties.
+                        for (let i = 0; i < filteredList.length; i++) {
+                            for (let j = 0; j < lichHoc.length; j++) {
+                                // If the day of the week and the caHoc.tenCaHoc property of the filteredList item
+                                // do not match with the lichHoc item, it adds the filteredList item to the listKhongTrung array.
+                                if (
+                                    days[new Date(filteredList[i].ngayHoc).getDay()] !==
+                                        days[new Date(lichHoc[j].ngayHoc).getDay()] ||
+                                    filteredList[i].caHoc.tenCaHoc !== lichHoc[j].caHoc.tenCaHoc
+                                ) {
+                                    console.log(filteredList[i].nhomThucHanh.lopHocPhan);
+                                    listKhongTrung.push(filteredList[i].nhomThucHanh.lopHocPhan);
+
+                                    // It then removes duplicates from the listKhongTrung array by converting it to a Set and then back to an array.
+                                }
+                            }
+                        }
+                        listKhongTrung.forEach((item) => {
+                            if (!loc.has(item.maLopHocPhan)) {
+                                loc.set(item.maLopHocPhan, item);
+                            }
+                        });
+
+                        let daLoc = Array.from(loc.values());
+                        setListLHP(daLoc);
+                        // const uniqueArr = [...new Set(listKhongTrung)];
+
+                        // // Finally, it sets the listLHP state with the uniqueArr array.
+                        // setListLHP(uniqueArr);
+                    } else {
+                        handleSelectHocPhan(selectedHP);
+                    }
+                }
+            };
+
+            // Loop through maLHP array and call LocLich function for each maLHP
+            maLHP.forEach(async (maLHP) => {
+                await LocLich(maLHP);
+            });
+        } else {
+            handleSelectHocPhan(selectedHP);
+        }
+    }, [checkTrung]);
+    console.log(listLHP);
     const renderDanhSachDieuKien = (item) => {
         let arrFilterHocTruoc = item.danhSachMonHocHocTruoc.map((monHoc) => {
             return (
@@ -465,7 +791,8 @@ function DangKyHocPhan() {
 
         return nodeDieuKien;
     };
-    //console.log(listLich);
+    console.log(selectedLoai);
+    console.log(listHocPhan);
     return (
         <div className="h-max w-full bg-gray-100 flex flex-row relative">
             <span className="w-1/12 mt-10">
@@ -551,19 +878,21 @@ function DangKyHocPhan() {
                                 {listHocPhan?.map((item, index) => (
                                     <tr
                                         className={`${
-                                            selectedHP === `${item.hocPhan.maHocPhan}` ? 'bg-orange-200' : ''
+                                            selectedHP?.hocPhan?.maHocPhan === `${item.hocPhan.maHocPhan}`
+                                                ? 'bg-orange-200'
+                                                : ''
                                         } hover:cursor-pointer`}
                                         key={item.hocPhan.maHocPhan + index + 'a'}
-                                        onClick={() => handleSelectHocPhan(item.hocPhan.maHocPhan)}
+                                        onClick={() => handleSelectHocPhan(item)}
                                     >
                                         <td>
                                             <input
                                                 type="radio"
                                                 className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                                 name="radio-group-mon"
-                                                value={item.hocPhan.maHocPhan}
-                                                checked={selectedHP === `${item.hocPhan.maHocPhan}`}
-                                                onChange={() => handleSelectHocPhan(item.hocPhan.maHocPhan)}
+                                                value={item}
+                                                checked={selectedHP?.hocPhan?.maHocPhan === `${item.hocPhan.maHocPhan}`}
+                                                onChange={() => handleSelectHocPhan(item)}
                                             />
                                         </td>
                                         <td>{index + 1}</td>
@@ -597,6 +926,8 @@ function DangKyHocPhan() {
                             type="checkbox"
                             className=" h-4 w-4 text-indigo-600 transition duration-150 ease-in-out p-2"
                             name="checkbox-trung"
+                            checked={checkTrung}
+                            onChange={handleCheckboxChange}
                         />
                         <span>
                             <b className="text-base text-sv-blue-5 mr-6 ml-2">Hiển thị lớp học phần không trùng lịch</b>
@@ -619,7 +950,7 @@ function DangKyHocPhan() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {listLHP.map((item, index) => (
+                                {listLHP?.map((item, index) => (
                                     <tr
                                         className={`${
                                             selectedLHP === `${item.maLopHocPhan}` ? 'bg-orange-200' : ''
@@ -643,10 +974,10 @@ function DangKyHocPhan() {
                                         </td>
                                         <td>{index + 1}</td>
                                         <td>{item.maLopHocPhan}</td>
-                                        <td>{item.hocPhan.tenHocPhan}</td>
+                                        <td>{item.hocPhan?.tenHocPhan}</td>
                                         <td>{item.tenLopHocPhan}</td>
                                         <td align="center">{item.siSo}</td>
-                                        <td className="">{item.siSoDK}</td>
+                                        <td className="">{item.siSoThuc}</td>
                                         <td>{item.trangThai}</td>
                                     </tr>
                                 ))}
@@ -685,10 +1016,16 @@ function DangKyHocPhan() {
                                         <td>
                                             <input
                                                 type="radio"
-                                                className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                                                className={
+                                                    item.nhomThucHanh?.tenNhom === 'Nhóm 0'
+                                                        ? 'hidden'
+                                                        : 'form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out'
+                                                }
                                                 name="radio-group-lich"
                                                 value={item.maLich}
-                                                checked={selectedLich === item}
+                                                checked={
+                                                    selectedLich.nhomThucHanh?.maNhom === item.nhomThucHanh?.maNhom
+                                                }
                                                 onChange={() => handleSelectLich(item)}
                                             />
                                         </td>
@@ -699,9 +1036,9 @@ function DangKyHocPhan() {
                                         <td align="center">{item.phong.dayNha.tenDayNha}</td>
                                         <td className="">{item.nhanVien.tenNhanVien}</td>
                                         <td>
-                                            {convertDateFormat(item.nhomThucHanh?.lopHocPhan?.ngayBatDau) +
+                                            {convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayBatDau) +
                                                 '-' +
-                                                convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayKetThuc)}
+                                                convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayKetThuc)}
                                         </td>
                                     </tr>
                                 ))}
@@ -834,9 +1171,9 @@ function DangKyHocPhan() {
                                         <td>{item.phong.dayNha.tenDayNha}</td>
                                         <td>{item.nhanVien.tenNhanVien}</td>
                                         <td>
-                                            {convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayBatDau) +
+                                            {convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayBatDau) +
                                                 '-' +
-                                                convertDateFormat(item.nhomThucHanh?.lopHocPhan.ngayKetThuc)}
+                                                convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayKetThuc)}
                                         </td>
                                     </tr>
                                 ))}
