@@ -50,3 +50,113 @@ export const addLopHocPhan = async (hp, accessToken, axiosJWT) => {
         return null;
     }
 };
+
+export const updateLopHocPhan = async (hp, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.put('/lophocphan', hp, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+export const getBangDiemTheoSVAndMH = async (maSinhVien, maMH, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lophocphan/bangdiem/sinhvien-monhoc', {
+            params: {
+                maSinhVien: maSinhVien,
+                maMH: maMH,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+export const getLopHocPhanByMaLHP = async (maLHP, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('lophocphan/malophocphan', {
+            params: {
+                maLHP: maLHP,
+            },
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        return null;
+    }
+};
+
+export const getBangDiemTheoHK = async (maSinhVien, maHK, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lophocphan/bangdiemsvandhk', {
+            params: {
+                maSinhVien: maSinhVien,
+                maHK: maHK,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+export const getBangDiemKhongDat = async (maSinhVien, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lophocphan/bangdiemkhongdat', {
+            params: {
+                maSinhVien: maSinhVien,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+export const diemTBTheoHK = async (maSinhVien, maHK, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lophocphan/diemtbtheohk', {
+            params: {
+                maSinhVien: maSinhVien,
+                maHK: maHK,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};

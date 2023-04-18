@@ -15,6 +15,22 @@ export const getLichTheoThoiGian = async (maSV, ngayBD, ngayKT, accessToken, axi
     }
 };
 
+export const getLichDaDKTheoHK = async (maSinhVien, maHK, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lich/lichddk', {
+            params: {
+                maSinhVien: maSinhVien,
+                maHK: maHK,
+            },
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        return res.data;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
 export const getLichTheoLHP = async (maLHP, accessToken, axiosJWT) => {
     try {
         const res = await axiosJWT.get('/lich/lhp', {

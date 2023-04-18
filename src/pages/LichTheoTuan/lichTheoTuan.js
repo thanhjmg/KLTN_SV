@@ -273,8 +273,8 @@ function LichTheoTuan() {
                                                     return (
                                                         <ItemLichHoc
                                                             key={item.maLich}
-                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
-                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
+                                                            mon={item.lopHocPhan?.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan?.tenLopHocPhan} - ${item.lopHocPhan?.maLopHocPhan}`}
                                                             tiet={item.caHoc.tenCaHoc}
                                                             phong={'Phòng: ' + item.phong.tenPhong}
                                                             gv={'GV: ' + item.nhanVien.tenNhanVien}
@@ -405,12 +405,12 @@ function LichTheoTuan() {
                                                     return (
                                                         <ItemLichHoc
                                                             key={item.maLich}
-                                                            mon={item.lopHocPhan.hocPhan.tenHocPhan}
-                                                            lop={`${item.lopHocPhan.tenLopHocPhan} - ${item.lopHocPhan.maLopHocPhan}`}
-                                                            tiet={item.caHoc.tenCaHoc}
-                                                            phong={'Phòng: ' + item.phong.tenPhong}
-                                                            gv={'GV: ' + item.nhanVien.tenNhanVien}
-                                                            type={item.trangThai}
+                                                            mon={item.lopHocPhan?.hocPhan.tenHocPhan}
+                                                            lop={`${item.lopHocPhan?.tenLopHocPhan} - ${item.lopHocPhan?.maLopHocPhan}`}
+                                                            tiet={item.caHoc?.tenCaHoc}
+                                                            phong={'Phòng: ' + item.phong?.tenPhong}
+                                                            gv={'GV: ' + item.nhanVien?.tenNhanVien}
+                                                            type={item?.trangThai}
                                                         />
                                                     );
                                                 })}
