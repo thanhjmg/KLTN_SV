@@ -30,13 +30,14 @@ function Home() {
     var accessToken = userLoginData.accessToken;
     var axiosJWT = getAxiosJWT(dispatch, userLoginData);
     const [listHK, setListHK] = useState([]);
+    const [listDaDK, setListDaDK] = useState([]);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
     useEffect(() => {
         const getHocKyByKhoaHoc = async () => {
             try {
                 if (!!userLogin.khoaHoc) {
                     const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
-                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5) * 1 + 2;
                     var list = await getHocKyTheoKhoaHoc(
                         `${startYear}-08-01`,
                         `${endYear}-06-01`,
@@ -53,7 +54,7 @@ function Home() {
     }, [userLogin]);
 
     const [selectedHK, setSelectedHK] = useState('HK005');
-    console.log(selectedHK);
+    //console.log(selectedHK);
     useEffect(() => {
         const getLopHocPhanByHK = async () => {
             let getLopHocByHK = await getChiTietPhieuDKByHocKyAndSinhVien(
@@ -77,7 +78,7 @@ function Home() {
         };
         getLopHocPhanByHK();
     }, [selectedHK]);
-    console.log(listLopHocPhanByHK);
+    //console.log(listLopHocPhanByHK);
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
@@ -123,8 +124,8 @@ function Home() {
                                         <div className="w-1/3 flex flex-col items-center mt-2 ">
                                             <div className="w-28 h-28  rounded-full border border-sv-blue-4">
                                                 <img
-                                                    src={logo_iuh}
-                                                    alt="qrcode"
+                                                    src={userLogin?.linkAnh || logo_iuh}
+                                                    alt="avatar"
                                                     className={cx('h-28 w-28 rounded-full')}
                                                 />
                                             </div>

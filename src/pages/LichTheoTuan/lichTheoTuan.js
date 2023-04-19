@@ -148,7 +148,7 @@ function LichTheoTuan() {
     //console.log(layTietHoc('Tiết 1-3'));
     //console.log(listLich);
     return (
-        <div className="flex flex-row w-full h-screen bg-gray-200 pt-3">
+        <div className="flex flex-row w-full h-screen bg-gray-200 pt-3 bp-2">
             <div className="w-1/12 h-full"></div>
             <div className="w-10/12 h-full flex flex-row">
                 <div className="w-1/6 h-min bg-white">
@@ -741,7 +741,7 @@ function LichTheoTuan() {
                             </table>
                         </div>
                     </div>
-                    <div className="ghichu flex flex-row p-2 item-center">
+                    <div className="ghichu flex flex-row p-2 item-center bp-2">
                         <div className="ml-2 h-4 flex items-center">
                             <b>Ghi chú</b>
                         </div>
