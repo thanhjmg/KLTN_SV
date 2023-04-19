@@ -88,7 +88,7 @@ function DefaultLayout({ children }) {
                         <div className="flex flex-row justify-center items-center ">
                             <div className="flex flex-row border rounded-full border-sv-blue-4">
                                 <img
-                                    src={user.linkAnh || logo_iuh}
+                                    src={(!!user && user.linkAnh) || logo_iuh}
                                     alt="avatar"
                                     className={cx('h-10 w-10 rounded-full')}
                                 />

@@ -124,7 +124,7 @@ function Home() {
                                         <div className="w-1/3 flex flex-col items-center mt-2 ">
                                             <div className="w-28 h-28  rounded-full border border-sv-blue-4">
                                                 <img
-                                                    src={userLogin?.linkAnh || logo_iuh}
+                                                    src={(!!userLogin && userLogin?.linkAnh) || logo_iuh}
                                                     alt="avatar"
                                                     className={cx('h-28 w-28 rounded-full')}
                                                 />
