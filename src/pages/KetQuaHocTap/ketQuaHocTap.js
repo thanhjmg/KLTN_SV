@@ -20,7 +20,8 @@ function KetQuaHocTap() {
     const cx = classNames.bind(style);
     const dispatch = useDispatch();
     const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
-    let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    const userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    //console.log(userLogin);
 
     var accessToken = userLoginData.accessToken;
     var axiosJWT = getAxiosJWT(dispatch, userLoginData);
@@ -32,6 +33,8 @@ function KetQuaHocTap() {
     }
 
     useEffect(() => {
+        // console.log('cmm');
+
         const fetchData = async () => {
             const getHocKy = await getHocKyByKhoaHoc(userLogin?.khoaHoc?.maKhoaHoc, accessToken, axiosJWT);
             setListHocKy(getHocKy); // Cập nhật listHocKy với dữ liệu mới
@@ -45,6 +48,7 @@ function KetQuaHocTap() {
                         accessToken,
                         axiosJWT,
                     );
+                    console.log(getDiemByHK);
                     return { hocKy: hocKy.tenHocKy, diem: getDiemByHK };
                 });
 
@@ -53,8 +57,8 @@ function KetQuaHocTap() {
                 setArr(results);
             }
         };
-        fetchData();
-    }, []);
+        if (!!userLogin) fetchData();
+    }, [userLogin]);
     console.log(arr);
 
     // useEffect(() => {
@@ -91,7 +95,7 @@ function KetQuaHocTap() {
         let tongDiemTinChi = 0;
         let tongSoTinChi = 0;
 
-        danhSachDiem.forEach((diem) => {
+        danhSachDiem?.forEach((diem) => {
             tongDiemTinChi += diem.diemTongKet * (diem.hocPhan.monHoc.soTCLT + diem.hocPhan.monHoc.soTCTH);
             tongSoTinChi += diem.hocPhan.monHoc.soTCLT + diem.hocPhan.monHoc.soTCTH;
         });
@@ -180,7 +184,7 @@ function KetQuaHocTap() {
     const tongTinChiDatTrongHK = (danhSachDiem) => {
         let tongSoTinChi = 0;
 
-        danhSachDiem.forEach((diem) => {
+        danhSachDiem?.forEach((diem) => {
             if (diem.trangThai === 'Đạt') {
                 tongSoTinChi += diem.hocPhan.monHoc.soTCLT + diem.hocPhan.monHoc.soTCTH;
             }
@@ -273,9 +277,9 @@ function KetQuaHocTap() {
             return 'Khá';
         } else if (diemHe10 >= 5) {
             return 'Trung bình';
-        } else {
-            return 'Yếu';
-        }
+        } else if (diemHe10 >= 4) {
+            return 'TB yếu';
+        } else return 'Yếu';
     }
 
     console.log(listHocKy);
@@ -429,30 +433,21 @@ function KetQuaHocTap() {
                                                 <td className="text-center">{i?.thucHanh3}</td>
                                                 <td className="text-center"></td>
                                                 <td className="text-center">{i?.cuoiKy}</td>
+                                                <td className="text-center">{i.diemTongKet}</td>
                                                 <td className="text-center">
-                                                    {tinhDiemTongKet(
-                                                        i?.thuongKy1,
-                                                        i?.thuongKy2,
-                                                        i?.thuongKy3,
-                                                        i?.thuongKy4,
-                                                        i?.thuongKy5,
-                                                        i?.giuaKy,
-                                                        i?.cuoiKy,
-                                                        i?.thucHanh1,
-                                                        i?.thucHanh2,
-                                                        i?.thucHanh3,
-                                                        i.hocPhan.monHoc.soTCLT,
-                                                        i.hocPhan.monHoc.soTCTH,
-                                                    )}
+                                                    {!!i?.diemTongKet || i?.diemTongKet === 0
+                                                        ? chuyenDoiDiemHe10SangHe4(i?.diemTongKet)
+                                                        : ''}
                                                 </td>
                                                 <td className="text-center">
-                                                    {i.diemTongKet ? chuyenDoiDiemHe10SangHe4(i?.diemTongKet) : ''}
+                                                    {i.diemTongKet || i?.diemTongKet === 0
+                                                        ? chuyenDoiDiemHe10SangHe4Chu(i.diemTongKet)
+                                                        : ''}
                                                 </td>
                                                 <td className="text-center">
-                                                    {i.diemTongKet ? chuyenDoiDiemHe10SangHe4Chu(i.diemTongKet) : ''}
-                                                </td>
-                                                <td className="text-center">
-                                                    {i.diemTongKet ? xepLoaiBangDiem(i.diemTongKet) : ''}
+                                                    {i.diemTongKet || i?.diemTongKet === 0
+                                                        ? xepLoaiBangDiem(i.diemTongKet)
+                                                        : ''}
                                                 </td>
                                                 <td className="text-center"></td>
                                                 <td className="text-center">

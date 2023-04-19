@@ -240,12 +240,12 @@ function DangKyHocPhan() {
             }
         };
 
-        getALLHocPhan();
+        if (!!userLogin) getALLHocPhan();
 
         return () => {
             isMounted = false; // set isMounted to false when component unmounts
         };
-    }, [listDK, selectedLoai]);
+    }, [listDK, selectedLoai, userLogin]);
 
     // useEffect(() => {
 
@@ -363,7 +363,7 @@ function DangKyHocPhan() {
             for (let i = 0; i < bangDiems.length; i++) {
                 console.log(bangDiems[i][0]?.giuaKy);
 
-                if (bangDiems[i][0]?.trangThai !== 'Qua môn') {
+                if (bangDiems[i][0]?.trangThai !== 'Đạt') {
                     count++;
                 }
             }
@@ -377,8 +377,11 @@ function DangKyHocPhan() {
             alert('Bạn chưa đủ điều kiện để đăng ký môn học này');
         } else {
             let result = await getLopHocPhanMaHP(item?.hocPhan?.maHocPhan, accessToken, axiosJWT);
-            setListLHP(result);
-            console.log(listLHP);
+            let arrTemp = result.filter(
+                (e) => e.trangThai === 'Chờ sinh viên đăng ký' || e.trangThai === 'Đang lêm kế hoạch',
+            );
+            setListLHP(arrTemp);
+            //console.log(listLHP);
         }
     };
 
@@ -920,7 +923,7 @@ function DangKyHocPhan() {
                 </div>
                 <div className="mt-8 p-2 flex flex-row items-center text-base w-full relative">
                     <div className="ml-2 mr-2 h-5 w-1 bg-red-500"> </div>
-                    <b className="text-sv-blue-5 ml-40">Lớp học phần chờ đăng ký</b>
+                    <b className="text-sv-blue-5 ml-2">Lớp học phần chờ đăng ký</b>
                     <label className="absolute right-0 flex flex-row items-center">
                         <input
                             type="checkbox"

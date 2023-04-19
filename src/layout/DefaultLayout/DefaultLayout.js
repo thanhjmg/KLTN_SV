@@ -87,7 +87,11 @@ function DefaultLayout({ children }) {
                         </div>
                         <div className="flex flex-row justify-center items-center ">
                             <div className="flex flex-row border rounded-full border-sv-blue-4">
-                                <img src={logo_iuh} alt="qrcode" className={cx('h-10 w-10 rounded-full')} />
+                                <img
+                                    src={user.linkAnh || logo_iuh}
+                                    alt="avatar"
+                                    className={cx('h-10 w-10 rounded-full')}
+                                />
                             </div>
                             <div className=" flex flex-row ml-3 justify-center items-center">
                                 <p className="text-sv-blue-4 mr-2">{user?.tenSinhVien}</p>

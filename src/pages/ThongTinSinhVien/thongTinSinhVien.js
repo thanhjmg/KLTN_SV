@@ -88,7 +88,11 @@ function ThongTinSinhVien() {
                             <div className="w-3/12 ml-5">
                                 <div className="flex w-full pt-5 pb-5 justify-center items-center">
                                     <div className="w-28 h-28  rounded-full border border-sv-blue-4">
-                                        <img src={logo_iuh} alt="qrcode" className={'h-28 w-28 rounded-full'} />
+                                        <img
+                                            src={userLogin?.linkAnh || logo_iuh}
+                                            alt="avatar"
+                                            className={'h-28 w-28 rounded-full'}
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex flex-row text-sm">
