@@ -67,6 +67,9 @@ function DangKyHocPhan() {
         let isMounted = true;
 
         const getALLHocPhan = async () => {
+            setListHocPhan([]);
+            setListLHP([]);
+            setListLich([]);
             if (selectedLoai === 'LDK002') {
                 const BangDiemKhongDat = async () => {
                     const bangDiemKhongDat = await getBangDiemKhongDat(userLogin.maSinhVien, accessToken, axiosJWT);
@@ -530,9 +533,12 @@ function DangKyHocPhan() {
     };
 
     const handleSelectLHP = async (item) => {
+        setListLich([]);
         setSelectedLHP(item);
         const getLopHocPhan = await getLopHocPhanByMaLHP(item, accessToken, axiosJWT);
-        if (getLopHocPhan.siSoThuc < getLopHocPhan.siSo) {
+        if (getLopHocPhan.trangThai !== 'Chờ sinh viên đăng ký') {
+            alert('Lớp học phần này không được đăng ký!');
+        } else if (getLopHocPhan.siSoThuc < getLopHocPhan.siSo) {
             let result = await getLichTheoLHP(item, accessToken, axiosJWT);
 
             if (result.length > 0) {
