@@ -98,7 +98,7 @@ function Login() {
                                 </div>
                                 <div className="flex justify-center p-7">
                                     <input
-                                        type="text"
+                                        type="password"
                                         className={cx(
                                             'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-sv-login-input bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
                                         )}
