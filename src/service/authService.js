@@ -81,5 +81,37 @@ export const register = async (user, navigate, dispatch) => {
     }
 };
 
-export const updatePassword = async (addBody, dispatch, navigate) => {};
-export const checkOldPassword = async (addBody) => {};
+export const updatePassword = async (userName, pass, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/auth/updatepass', {
+            params: {
+                pass: pass,
+                userName: userName,
+            },
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+export const checkPassOld = async (userName, pass, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/auth/passold', {
+            params: {
+                pass: pass,
+                userName: userName,
+            },
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};

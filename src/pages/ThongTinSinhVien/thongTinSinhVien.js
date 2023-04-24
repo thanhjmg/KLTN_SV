@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 function ThongTinSinhVien() {
     // const cx = classNames.bind(style);
     let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
-    console.log(userLogin);
+    //console.log(userLogin);
     // const ngaySinhFormat = () => {
     //     if (userLogin.ngaySinh !== null) {
     //         let dateString = userLogin?.ngaySinh;
@@ -32,6 +32,13 @@ function ThongTinSinhVien() {
     //     }
     // };
     // ngaySinhFormat();
+    function convertDateFormat(dateString) {
+        let date = new Date(dateString);
+        let day = date.getDate().toString().padStart(2, '0');
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
     return (
         <>
             <div className="flex flex-row w-full h-max bg-gray-200 pt-3">
@@ -173,16 +180,18 @@ function ThongTinSinhVien() {
                             </div>
                         </div>
                         <div className="mt-10 ml-5 w-full">
-                            <h1 className="text-2xl text-sv-text-2 font-bold  border-b-2   h-10">Thông tin học vấn</h1>
+                            <h1 className="text-2xl text-sv-text-2 font-bold  border-b-2   h-10">Thông tin cá nhân</h1>
                             <div className="w-full flex">
                                 <div className="w-4/12">
                                     <div className="flex text-sm ml-0 m-5 ">
                                         <p className="mr-2 text-sv-text-1 ">Ngày sinh:</p>
-                                        <p className="text-sv-text-2 font-bold">{}</p>
+                                        <p className="text-sv-text-2 font-bold">
+                                            {convertDateFormat(userLogin?.ngaySinh)}
+                                        </p>
                                     </div>
                                     <div className="flex text-sm ml-0 m-5 ">
                                         <p className="mr-2 text-sv-text-1 ">Số CCCD:</p>
-                                        <p className="text-sv-text-2 font-bold">123456789</p>
+                                        <p className="text-sv-text-2 font-bold">{userLogin?.soCCCD}</p>
                                     </div>
                                     <div className="flex text-sm ml-0 m-5 ">
                                         <p className="mr-2 text-sv-text-1 ">Đối tượng:</p>
@@ -206,7 +215,9 @@ function ThongTinSinhVien() {
                                             </div>
                                             <div className="flex text-sm ml-0 m-5">
                                                 <p className="mr-2 text-sv-text-1 ">Ngày cấp:</p>
-                                                <p className="text-sv-text-2 font-bold">01/11/2019</p>
+                                                <p className="text-sv-text-2 font-bold">
+                                                    {convertDateFormat(userLogin?.ngayCapCCCD)}
+                                                </p>
                                             </div>
                                             <div className="flex text-sm ml-0 m-5">
                                                 <p className="mr-2 text-sv-text-1 ">Diện chính sách:</p>
@@ -214,7 +225,9 @@ function ThongTinSinhVien() {
                                             </div>
                                             <div className="flex text-sm ml-0 m-5">
                                                 <p className="mr-2 text-sv-text-1 ">Ngày vào Đảng:</p>
-                                                <p className="text-sv-text-2 font-bold"></p>
+                                                <p className="text-sv-text-2 font-bold">
+                                                    {convertDateFormat(userLogin?.ngayVaoDang)}
+                                                </p>
                                             </div>
                                             <div className="flex text-sm ml-0 m-5">
                                                 <p className="mr-2 text-sv-text-1 ">Email:</p>
@@ -228,7 +241,7 @@ function ThongTinSinhVien() {
                                             </div>
                                             <div className="flex text-sm ml-0 m-5">
                                                 <p className="mr-2 text-sv-text-1 ">Nơi cấp:</p>
-                                                <p className="text-sv-text-2 font-bold">Tiền Giang</p>
+                                                <p className="text-sv-text-2 font-bold">{userLogin?.noiCap}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -245,7 +258,7 @@ function ThongTinSinhVien() {
                                 </div>
                                 <div className="flex text-sm ml-0 m-5 ">
                                     <p className="mr-2 text-sv-text-1 ">Hộ khẩu thường trú:</p>
-                                    <p className="text-sv-text-2 font-bold">tỉnh Vĩnh Long</p>
+                                    <p className="text-sv-text-2 font-bold">{userLogin?.diaChi}</p>
                                 </div>
                             </div>
                         </div>

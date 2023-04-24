@@ -24,25 +24,28 @@ function LichTheoTuan() {
     var accessToken = userLoginData?.accessToken;
     var axiosJWT = getAxiosJWT(dispatch, userLoginData);
 
-    const [selectedValue, setSelectedValue] = useState('all');
+    const [selectedValue, setSelectedValue] = useState('Bình thường');
     const [currentDate, setCurrentDate] = useState(moment());
-    const [listLich, setListLich] = useState([]);
+    const [listLich, setListLich] = useState([]); //dùng để render
+    const [listLichAll, setListLichAll] = useState([]); //dùng để lọc loại lịch
     const [date, setDate] = useState(currentDate.format('YYYY-MM-DD'));
+
     const handleRadioButtonChange = (event) => {
         setSelectedValue(event.target.value);
+        //console.log(event.target.value);
+        let temp = [...listLichAll];
+        if (event.target.value === 'Lịch thi') {
+            let result = temp.filter((e) => e.trangThai === 'Lịch thi');
+            setListLich(result);
+            return;
+        }
+        if (event.target.value === 'Lịch học') {
+            let result = temp.filter((e) => e.trangThai !== 'Lịch thi');
+            setListLich(result);
+            return;
+        } else setListLich(temp);
+        return;
     };
-
-    // var today = new Date();
-    // var dd = String(today.getDate()).padStart(2, '0');
-    // var mm = String(today.getMonth() + 1).padStart(2, '0'); //Tháng trong javascript bắt đầu từ 0
-    // var yyyy = today.getFullYear();
-
-    // today = yyyy + '-' + dd + '-' + mm;
-
-    // const [date, setDate] = useState(today);
-
-    //console.log(date);
-    //console.log(currentDate);
 
     const handleDateChange = (e) => {
         //setDate(event.target.value);
@@ -52,12 +55,6 @@ function LichTheoTuan() {
     };
     const [week, setWeek] = useState([]);
     useEffect(() => {
-        // const selectedDate = moment(date);
-        // const selectedWeek = selectedDate.isoWeek();
-        // const selectedYear = selectedDate.isoWeekYear();
-        // const startOfWeek = moment().isoWeek(selectedWeek).isoWeekYear(selectedYear).startOf('isoWeek');
-        // const endOfWeek = moment().isoWeek(selectedWeek).isoWeekYear(selectedYear).endOf('isoWeek');
-
         const startOfWeek = currentDate.clone().isoWeekday(1).startOf('day'); // Lấy ngày bắt đầu tuần từ thứ 2
         const endOfWeek = currentDate.clone().isoWeekday(7).endOf('day'); // Lấy ngày kết thúc tuần là chủ nhật
         const days = [];
@@ -80,7 +77,10 @@ function LichTheoTuan() {
         const getAllLich = async () => {
             let resultLich = await getLichTheoThoiGian(currSV?.maSinhVien, firstDay, lastDay, accessToken, axiosJWT);
             //console.log(resultLich);
-            if (!!resultLich) setListLich(resultLich);
+            if (!!resultLich) {
+                setListLich(resultLich);
+                setListLichAll(resultLich);
+            }
         };
         getAllLich();
     }, [currentDate]);
@@ -143,14 +143,10 @@ function LichTheoTuan() {
         return soTiet;
     }
 
-    //console.log(layTietHoc('Tiết 1-3')); // kết quả là 3
-
-    //console.log(layTietHoc('Tiết 1-3'));
-    //console.log(listLich);
     return (
-        <div className="flex flex-row w-full h-screen bg-gray-200 pt-3 bp-2">
-            <div className="w-1/12 h-full"></div>
-            <div className="w-10/12 h-full flex flex-row">
+        <div className="flex flex-row w-full bg-gray-200 pt-3 bp-2">
+            <div className="w-1/12 "></div>
+            <div className="w-10/12 flex flex-row">
                 <div className="w-1/6 h-min bg-white">
                     <Menu />
                 </div>
@@ -164,8 +160,8 @@ function LichTheoTuan() {
                                         type="radio"
                                         className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                         name="radio-group"
-                                        value="all"
-                                        checked={selectedValue === 'all'}
+                                        value="Bình thường"
+                                        checked={selectedValue === 'Bình thường'}
                                         onChange={handleRadioButtonChange}
                                     />
                                     <span className="ml-1">Tất cả</span>
@@ -175,8 +171,8 @@ function LichTheoTuan() {
                                         type="radio"
                                         className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                         name="radio-group"
-                                        value="lichHoc"
-                                        checked={selectedValue === 'lichHoc'}
+                                        value="Lịch học"
+                                        checked={selectedValue === 'Lịch học'}
                                         onChange={handleRadioButtonChange}
                                     />
                                     <span className="ml-1">Lịch học</span>
@@ -186,8 +182,8 @@ function LichTheoTuan() {
                                         type="radio"
                                         className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                                         name="radio-group"
-                                        value="lichThi"
-                                        checked={selectedValue === 'lichThi'}
+                                        value="Lịch thi"
+                                        checked={selectedValue === 'Lịch thi'}
                                         onChange={handleRadioButtonChange}
                                     />
                                     <span className="ml-1">Lịch thi</span>
@@ -209,7 +205,7 @@ function LichTheoTuan() {
                                     </Button>
                                 </div>
                                 <div className="ml-4 flex items-center">
-                                    <Button variant="contained" size="small">
+                                    <Button variant="contained" size="small" onClick={() => setCurrentDate(moment())}>
                                         Hiện tại
                                     </Button>
                                 </div>
@@ -227,30 +223,6 @@ function LichTheoTuan() {
                         <div className="">
                             <table className={cx('table')}>
                                 <thead className="text-sv-blue-5">
-                                    {/* <tr className={cx('thead bg-blue-100')}>
-                                        <th className={cx('thead-ca')}>Ca học</th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 2 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 3 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 4 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 5 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 6 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Thứ 7 <br /> 11/11/2022
-                                        </th>
-                                        <th className={cx('thead-ngay')}>
-                                            Chủ nhật <br /> 12/11/2022
-                                        </th>
-                                    </tr> */}
                                     <tr>
                                         <th>Ca học</th>
                                         {week.map((day, index) => (
@@ -764,7 +736,7 @@ function LichTheoTuan() {
                     </div>
                 </div>
             </div>
-            <div className="w-1/12 h-full"></div>
+            <div className="w-1/12 "></div>
         </div>
     );
 }
