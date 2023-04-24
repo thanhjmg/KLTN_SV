@@ -49,11 +49,50 @@ function KetQuaHocTap() {
                         axiosJWT,
                     );
                     console.log(getDiemByHK);
-                    return { hocKy: hocKy.tenHocKy, diem: getDiemByHK };
+                    const diemFiltered = getDiemByHK.filter(
+                        (item) => item.trangThai !== 'Học lại' && item.trangThai !== 'Học cải thiện',
+                    );
+
+                    return { hocKy: hocKy.tenHocKy, diem: diemFiltered };
                 });
 
                 const results = await Promise.all(promises);
+                const bangDiemDaXuatHien = {};
+                function removeDuplicateBangDiem(list) {
+                    const results = [...list];
+                    const bangDiemDaXuatHien = {};
 
+                    // Duyệt qua từng học kỳ trong danh sách
+                    for (let i = results.length - 1; i >= 0; i--) {
+                        const hocKy = results[i];
+                        const diemMoi = [];
+                        console.log(results[i]);
+
+                        // Duyệt qua từng bảng điểm trong học kỳ
+                        for (let j = 0; j < hocKy.diem.length; j++) {
+                            const bangDiem = hocKy.diem[j];
+
+                            // Nếu bảng điểm đã xuất hiện trước đó
+                            if (bangDiemDaXuatHien[bangDiem.maBangDiem]) {
+                                // Loại bỏ bảng điểm đó khỏi học kỳ hiện tại
+                                continue;
+                            }
+
+                            // Thêm bảng điểm vào danh sách mới
+                            else diemMoi.push(bangDiem);
+                            console.log(diemMoi);
+
+                            // Đánh dấu bảng điểm đó đã xuất hiện
+                            bangDiemDaXuatHien[bangDiem.maBangDiem] = true;
+                        }
+
+                        // Cập nhật danh sách bảng điểm của học kỳ
+                        hocKy.diem = diemMoi;
+                    }
+
+                    return results;
+                }
+                console.log(removeDuplicateBangDiem(results));
                 setArr(results);
             }
         };
@@ -193,35 +232,6 @@ function KetQuaHocTap() {
         return tongSoTinChi;
     };
 
-    console.log(tongSoTinChiTichLuy(arr, 1));
-    const tinhDiemTongKet = (tk1, tk2, tk3, tk4, tk5, gk, ck, th1, th2, th3, soTCLT, soTCTH) => {
-        let countTK = 0;
-        let diemTongKet = 0;
-        if (tk1 !== null) countTK++;
-        if (tk2 !== null) countTK++;
-        if (tk3 !== null) countTK++;
-        if (tk4 !== null) countTK++;
-        if (tk5 !== null) countTK++;
-        let tbTK =
-            ((tk1 ? tk1 : 0) * 1 +
-                (tk2 ? tk2 : 0) * 1 +
-                (tk3 ? tk3 : 0) * 1 +
-                (tk4 ? tk4 : 0) * 1 +
-                (tk5 ? tk5 : 0) * 1) /
-            countTK;
-        let countTH = 0;
-        if (th1 !== null) countTH++;
-        if (th2 !== null) countTH++;
-        if (th3 !== null) countTH++;
-        let tbTH = ((th1 ? th1 : 0) * 1 + (th2 ? th2 : 0) * 1 + (th3 ? th3 : 0) * 1) / countTH;
-        // console.log(tbTK + 'tbTK');
-        // console.log(tbTH + 'th');
-        if (soTCTH > 0) {
-            diemTongKet = ((tbTK * 0.2 + gk * 0.3 + ck * 0.5) * soTCLT + tbTH * soTCTH) / (soTCLT + soTCTH);
-        } else diemTongKet = tbTK * 0.2 + gk * 0.3 + ck * 0.5;
-
-        return diemTongKet.toFixed(1);
-    };
     function chuyenDoiDiemHe10SangHe4(diemHe10) {
         if (diemHe10 >= 9) {
             return 4;

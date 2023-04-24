@@ -5,19 +5,25 @@ import classNames from 'classnames';
 import style from './lichTheoTienDo.scss';
 import Menu from '../../components/Menu/menu';
 import { FaAlignJustify } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
+import { useDispatch } from 'react-redux';
+import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
+import { getLichTheoLHP, themLich, getChiTietLichByMaSinhVienAndLopHP, getLichDaDKTheoHK } from '~/service/lichService';
 function LichTheoTienDo() {
     const cx = classNames.bind(style);
+    const dispatch = useDispatch();
+    const userLoginData = useSelector((state) => state.persistedReducer.auth.currentUser);
+    let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
+    var accessToken = userLoginData.accessToken;
+    var axiosJWT = getAxiosJWT(dispatch, userLoginData);
     const [selectedValue, setSelectedValue] = useState('all');
-    const options = ['HK1 (2021-2022)', 'HK1 (2021-2022)', 'HK1 (2021-2022)'];
-    const [selectedOption, setSelectedOption] = useState(options[0]);
 
     const handleRadioButtonChange = (event) => {
         setSelectedValue(event.target.value);
     };
-    function handleChange(event) {
-        setSelectedOption(event.target.value);
-    }
 
+    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //Tháng trong javascript bắt đầu từ 0
@@ -36,6 +42,64 @@ function LichTheoTienDo() {
     function Menu1() {
         showMenu ? setShowMenu(false) : setShowMenu(true);
     }
+
+    const [listLich, setListLich] = useState([]);
+    const [listHK, setListHK] = useState([]);
+
+    const [selectedHK, setSelectedHK] = useState(null);
+    function convertDateFormat(dateString) {
+        let date = new Date(dateString);
+        let day = date.getDate().toString().padStart(2, '0');
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    useEffect(() => {
+        const getHocKyByKhoaHoc = async () => {
+            try {
+                if (!!userLogin.khoaHoc) {
+                    const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    const list = await getHocKyTheoKhoaHoc(
+                        `${startYear}-08-01`,
+                        `${endYear}-06-01`,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    setListHK(list);
+                    if (list.length > 0) {
+                        setSelectedHK(list[0].maHocKy);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getHocKyByKhoaHoc();
+    }, [userLogin]);
+
+    const handleChangeHK = async (event) => {
+        setSelectedHK(event.target.value);
+    };
+    useEffect(() => {
+        const TatCaLich = async () => {
+            const listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+            if (!!listALLLichByHK) {
+                let filteredListLich;
+                if (selectedValue === 'lichThi') {
+                    filteredListLich = listALLLichByHK.filter((lich) => lich.trangThai === 'Lịch thi');
+                } else if (selectedValue === 'lichHoc') {
+                    filteredListLich = listALLLichByHK.filter((lich) => lich.trangThai === 'Bình thường');
+                } else {
+                    filteredListLich = listALLLichByHK;
+                }
+                setListLich(filteredListLich);
+            }
+        };
+
+        TatCaLich();
+    }, [selectedValue, selectedHK]);
 
     return (
         <>
@@ -91,21 +155,17 @@ function LichTheoTienDo() {
                                     <div className="relative border border-gray-400 ml-2">
                                         <select
                                             className="text-sv-text-2 border h-full border-sv-blue-4 "
-                                            value={selectedOption}
-                                            onChange={handleChange}
+                                            value={selectedHK}
+                                            onChange={handleChangeHK}
                                         >
-                                            {options.map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
+                                            {listHK?.map((option) => (
+                                                <option key={option.maHocKy} value={option.maHocKy}>
+                                                    {option.tenHocKy}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="ml-4 flex items-center">
-                                        <Button variant="contained" size="small">
-                                            Xem lịch
-                                        </Button>
-                                    </div>
+                                    <div className="ml-4 flex items-center"></div>
                                 </div>
                             </div>
                         </div>
@@ -138,23 +198,39 @@ function LichTheoTienDo() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>4203002790</td>
-                                        <td>Khóa luận tốt nghiệp</td>
-                                        <td>5</td>
-                                        <td>7</td>
-                                        <td>16</td>
-                                        <td>Thực hành</td>
-                                        <td>Khóa luận</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>31/12/2022</td>
-                                        <td>31/12/2022 </td>
-                                        <td>TA00120118</td>
-                                        <td> Giảng viên tạm CNTT 3</td>
-                                    </tr>
-                                    {/* Add more rows as needed */}
+                                    {listLich.map((item, index) => (
+                                        <tr
+                                            className={`${
+                                                item.trangThai === 'Lịch thi' ? 'bg-orange-200' : ''
+                                            } hover:cursor-pointer`}
+                                        >
+                                            <td>{index + 1}</td>
+                                            <td>{item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan}</td>
+                                            <td>{item.nhomThucHanh.lopHocPhan.hocPhan.tenHocPhan}</td>
+                                            <td>
+                                                {item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCLT +
+                                                    item.nhomThucHanh.lopHocPhan.hocPhan.monHoc.soTCTH}
+                                            </td>
+                                            <td>{days[new Date(item.ngayHoc).getDay()]}</td>
+                                            <td>{item.caHoc.tenCaHoc}</td>
+                                            <td>{item.loaiLich}</td>
+                                            <td>{item.phong.tenPhong}</td>
+                                            <td>
+                                                {item.nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                                    ? item.nhomThucHanh.tenNhom
+                                                    : ''}
+                                            </td>
+                                            <td>
+                                                {item.caHoc.gioBD.substring(0, 5) +
+                                                    '-' +
+                                                    item.caHoc.gioKT.substring(0, 5)}
+                                            </td>
+                                            <td>{convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayBatDau)}</td>
+                                            <td>{convertDateFormat(item.nhomThucHanh.lopHocPhan.ngayKetThuc)}</td>
+                                            <td>{item.nhanVien.maNhanVien}</td>
+                                            <td>{item.nhanVien.tenNhanVien}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

@@ -19,11 +19,15 @@ import {
     getLopHocPhanByMaLHP,
     updateLopHocPhan,
     getBangDiemKhongDat,
+    updateTrangThaiBangDiem,
+    getBangDiemDat,
+    getLopHocPhanTheoMaHP,
 } from '../../service/lopHocPhanService';
 import { getLichTheoLHP, themLich, getChiTietLichByMaSinhVienAndLopHP, getLichDaDKTheoHK } from '~/service/lichService';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
 import Box from '@mui/material/Box';
 import { FaRegWindowClose } from 'react-icons/fa';
+
 import {
     getTatCaChiTietPhieu,
     getChiTietPhieuDKByMaSinhVien,
@@ -35,6 +39,7 @@ import {
     themChiTietPhieuDangKy,
     getChiTietPhieuDKByHocKyAndSinhVien,
 } from '../../service/phieuDKHP';
+
 const cx = classNames.bind(style);
 
 function DangKyHocPhan() {
@@ -44,12 +49,40 @@ function DangKyHocPhan() {
     var accessToken = userLoginData.accessToken;
     var axiosJWT = getAxiosJWT(dispatch, userLoginData);
 
-    const [selectedOptionHK, setSelectedOptionHK] = useState('');
     const [listHocPhan, setListHocPhan] = useState([]);
+
     const [listLHP, setListLHP] = useState([]);
     const [listHK, setListHK] = useState([]);
+
+    const [selectedHK, setSelectedHK] = useState(null);
+
+    useEffect(() => {
+        const getHocKyByKhoaHoc = async () => {
+            try {
+                if (!!userLogin.khoaHoc) {
+                    const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    const list = await getHocKyTheoKhoaHoc(
+                        `${startYear}-08-01`,
+                        `${endYear}-06-01`,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    setListHK(list);
+                    if (list.length > 0) {
+                        setSelectedHK(list[0].maHocKy);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getHocKyByKhoaHoc();
+    }, [userLogin]);
+    console.log(selectedHK);
+
     const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    const [selectedHK, setSelectedHK] = useState('HK005');
+
     const [listDK, setListDK] = useState([]);
     const [listLHPDK, setListLHPDK] = useState([]);
     const [listLich, setListLich] = useState([]);
@@ -145,6 +178,81 @@ function DangKyHocPhan() {
                     }
                 };
                 BangDiemKhongDat();
+            } else if (selectedLoai === 'LDK003') {
+                const BangDiemDat = async () => {
+                    const bangDiemDat = await getBangDiemDat(userLogin.maSinhVien, accessToken, axiosJWT);
+                    setListHocPhan(bangDiemDat);
+                    var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    const filteredList = [];
+                    let filteredArr = [...bangDiemDat];
+                    for (let i = 0; i < listChiTietPhieu.length; i++) {
+                        filteredArr = filteredArr.filter(
+                            (item) =>
+                                item.hocPhan.maHocPhan !==
+                                listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                        );
+                    }
+
+                    if (!isMounted) {
+                        return; // component unmounted, aborting
+                    }
+
+                    setListHocPhan(filteredArr);
+                    let dk = null;
+                    if (listChiTietPhieu.length === 1) {
+                        setListDaDK(listChiTietPhieu);
+                    } else if (listChiTietPhieu.length > 1) {
+                        for (let i = 0; i < listChiTietPhieu.length; i++) {
+                            let dk = listChiTietPhieu[i]; // Gán giá trị ban đầu của dk là phần tử i
+                            let isDuplicate = false; // Đánh dấu xem có bị trùng hay không
+
+                            // Duyệt qua các phần tử còn lại trong danh sách
+                            for (let j = i + 1; j < listChiTietPhieu.length; j++) {
+                                // Kiểm tra điều kiện lọc
+                                if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[j].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[j]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                } else if (
+                                    listChiTietPhieu[i].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        listChiTietPhieu[j].nhomThucHanh.lopHocPhan.hocPhan.maHocPhan &&
+                                    listChiTietPhieu[i].nhomThucHanh.tenNhom !== 'Nhóm 0'
+                                ) {
+                                    dk = listChiTietPhieu[i]; // Nếu thỏa điều kiện, gán lại giá trị của dk
+                                    isDuplicate = true; // Đánh dấu là bị trùng
+                                }
+                            }
+
+                            if (!isDuplicate) {
+                                dk = listChiTietPhieu[i]; // Nếu không bị trùng, gán lại giá trị của dk
+                            }
+
+                            filteredList.push(dk); // Sau khi duyệt qua tất cả các phần tử j, đẩy giá trị dk vào danh sách lọc
+                        }
+                        // console.log(filteredList);
+                        const uniqueListDK = filteredList.filter((item, index, self) => {
+                            // Lọc các mục có giá trị thuộc tính 'maPhieuDangKy' duy nhất
+                            return (
+                                self.findIndex(
+                                    (i) =>
+                                        i.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan ===
+                                        item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                                ) === index
+                            );
+                        });
+
+                        setListDaDK(uniqueListDK);
+                    }
+                };
+                BangDiemDat();
             } else {
                 try {
                     let getHocPhan = await findHocPhanByMaSinhVienAndMaNganh(
@@ -255,27 +363,6 @@ function DangKyHocPhan() {
     // }, [listDK]);
 
     useEffect(() => {
-        const getHocKyByKhoaHoc = async () => {
-            try {
-                if (!!userLogin.khoaHoc) {
-                    const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
-                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
-                    var list = await getHocKyTheoKhoaHoc(
-                        `${startYear}-08-01`,
-                        `${endYear}-06-01`,
-                        accessToken,
-                        axiosJWT,
-                    );
-                    setListHK(list);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        getHocKyByKhoaHoc();
-    }, [userLogin]);
-
-    useEffect(() => {
         const getChiTietPhieuDKTheoHocKy = async () => {
             try {
                 var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
@@ -295,10 +382,9 @@ function DangKyHocPhan() {
     }, [selectedHK]);
 
     // console.log(listDK);
+
     const handleSelectHocPhan = async (item) => {
         // Khởi tạo giá trị ban đầu cho biến listDiem là một mảng rỗng
-
-        console.log(item);
 
         // Các bước xử lý khác
         // setCheckTrung(false);
@@ -324,13 +410,10 @@ function DangKyHocPhan() {
             }
 
             // Log giá trị của mảng bangDiems sau khi vòng for đã kết thúc
-            console.log(bangDiems);
 
             // Đếm số lượng môn học chưa có điểm giữa kỳ
             let count = 0;
             for (let i = 0; i < bangDiems.length; i++) {
-                console.log(bangDiems[i][0]?.giuaKy);
-
                 if (!bangDiems[i][0]?.giuaKy) {
                     count++;
                 }
@@ -359,13 +442,10 @@ function DangKyHocPhan() {
             }
 
             // Log giá trị của mảng bangDiems sau khi vòng for đã kết thúc
-            console.log(bangDiems);
 
             // Đếm số lượng môn học chưa có điểm giữa kỳ
             let count = 0;
             for (let i = 0; i < bangDiems.length; i++) {
-                console.log(bangDiems[i][0]?.giuaKy);
-
                 if (bangDiems[i][0]?.trangThai !== 'Đạt') {
                     count++;
                 }
@@ -376,15 +456,15 @@ function DangKyHocPhan() {
                 countDK++;
             }
         }
+
         if (countDK > 0) {
             alert('Bạn chưa đủ điều kiện để đăng ký môn học này');
         } else {
-            let result = await getLopHocPhanMaHP(item?.hocPhan?.maHocPhan, accessToken, axiosJWT);
+            let result = await getLopHocPhanTheoMaHP(item?.hocPhan?.maHocPhan, selectedHK, accessToken, axiosJWT);
             let arrTemp = result.filter(
                 (e) => e.trangThai === 'Chờ sinh viên đăng ký' || e.trangThai === 'Đang lêm kế hoạch',
             );
             setListLHP(arrTemp);
-            //console.log(listLHP);
         }
     };
 
@@ -400,7 +480,7 @@ function DangKyHocPhan() {
     const [selectedLop, setSelectedLop] = useState('');
     const [selectedLHP, setSelectedLHP] = useState('');
     const [selectedLichHoc, setSelectedLichHoc] = useState('');
-    const [showMenu, setShowMenu] = useState(true);
+    const [showMenu, setShowMenu] = useState(false);
     const [selectedHP, setSelectedHP] = useState('');
     const [listLichHoc, setListLichHoc] = useState([]);
     const [listChiTietLichDK, setListChiTietLichDK] = useState([]);
@@ -439,86 +519,110 @@ function DangKyHocPhan() {
         getLichDaDK();
     };
     const handleDeleteClick = async (item, index) => {
-        var HuyLHPDK;
-        let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-        console.log(getPhieuDangKy);
-        console.log(item);
-        let listLichDaDK = await getChiTietLichByMaSinhVienAndLopHP(
-            userLogin.maSinhVien,
-            item.nhomThucHanh.lopHocPhan.maLopHocPhan,
-            accessToken,
-            axiosJWT,
-        );
+        if (item.nhomThucHanh.lopHocPhan.trangThai !== 'Đã khóa') {
+            if (item.loaiDangKyHP.tenLoaiDKHP === 'Học lại') {
+                const trangThai = 'Không đạt';
+                await updateTrangThaiBangDiem(
+                    `${trangThai}`,
+                    userLogin.maSinhVien,
+                    item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                    accessToken,
+                    axiosJWT,
+                );
+            } else if (item.loaiDangKyHP.tenLoaiDKHP === 'Học cải thiện') {
+                const trangThai = 'Đạt';
+                await updateTrangThaiBangDiem(
+                    `${trangThai}`,
+                    userLogin.maSinhVien,
+                    item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
+                    accessToken,
+                    axiosJWT,
+                );
+            }
+            var HuyLHPDK;
+            let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
+                userLogin.maSinhVien,
+                selectedHK,
+                accessToken,
+                axiosJWT,
+            );
 
-        if (listLichDaDK.length > 0) {
-            let map = new Map();
+            let listLichDaDK = await getChiTietLichByMaSinhVienAndLopHP(
+                userLogin.maSinhVien,
+                item.nhomThucHanh.lopHocPhan.maLopHocPhan,
+                accessToken,
+                axiosJWT,
+            );
 
-            listLichDaDK.forEach((item) => {
-                if (!map.has(item.nhomThucHanh?.maNhom)) {
-                    map.set(item.nhomThucHanh?.maNhom, item);
-                }
-            });
+            if (listLichDaDK?.length > 0) {
+                let map = new Map();
 
-            let filteredList = Array.from(map.values());
-            console.log(filteredList);
-            if (filteredList.length > 1) {
-                for (let i = 0; i < filteredList.length; i++) {
-                    console.log(filteredList[i].nhomThucHanh.maNhom);
+                listLichDaDK.forEach((item) => {
+                    if (!map.has(item.nhomThucHanh?.maNhom)) {
+                        map.set(item.nhomThucHanh?.maNhom, item);
+                    }
+                });
+
+                let filteredList = Array.from(map.values());
+
+                if (filteredList.length > 1) {
+                    for (let i = 0; i < filteredList.length; i++) {
+                        HuyLHPDK = await deleteChiTietPDKByMaPhieuDKAndMaNhomTH(
+                            item.phieuDangKyHocPhan.maPhieuDangKy,
+                            filteredList[i].nhomThucHanh.maNhom,
+                            accessToken,
+                            axiosJWT,
+                        );
+                    }
+                } else {
                     HuyLHPDK = await deleteChiTietPDKByMaPhieuDKAndMaNhomTH(
                         item.phieuDangKyHocPhan.maPhieuDangKy,
-                        filteredList[i].nhomThucHanh.maNhom,
+                        filteredList[0].nhomThucHanh.maNhom,
                         accessToken,
                         axiosJWT,
                     );
                 }
-            } else {
-                HuyLHPDK = await deleteChiTietPDKByMaPhieuDKAndMaNhomTH(
-                    item.phieuDangKyHocPhan.maPhieuDangKy,
-                    filteredList[0].nhomThucHanh.maNhom,
-                    accessToken,
-                    axiosJWT,
-                );
+
+                if (HuyLHPDK.length === 0) {
+                    const getLopHocPhan = await getLopHocPhanByMaLHP(
+                        item.nhomThucHanh.lopHocPhan.maLopHocPhan,
+                        accessToken,
+                        axiosJWT,
+                    );
+
+                    const lhp = {
+                        maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                        tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                        siSo: getLopHocPhan.siSo,
+                        siSoThuc: getLopHocPhan.siSoThuc - 1,
+                        ngayBatDau: getLopHocPhan.ngayBatDau,
+                        ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                        trangThai: getLopHocPhan.trangThai,
+                        hocPhan: selectedHP.hocPhan?.maHocPhan,
+                    };
+
+                    const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+
+                    if (!!updateLHP) alert('Hủy thành công');
+                    var listChiTietPhieuLT = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+
+                    setListDK(listChiTietPhieuLT);
+                    var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+
+                    setListDaDK(listChiTietPhieu);
+                }
             }
-            console.log(HuyLHPDK.length);
-            if (HuyLHPDK.length === 0) {
-                console.log(item);
-                const getLopHocPhan = await getLopHocPhanByMaLHP(
-                    item.nhomThucHanh.lopHocPhan.maLopHocPhan,
-                    accessToken,
-                    axiosJWT,
-                );
-
-                const lhp = {
-                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
-                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
-                    siSo: getLopHocPhan.siSo,
-                    siSoThuc: getLopHocPhan.siSoThuc - 1,
-                    ngayBatDau: getLopHocPhan.ngayBatDau,
-                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
-                    trangThai: getLopHocPhan.trangThai,
-                    hocPhan: selectedHP.hocPhan?.maHocPhan,
-                };
-
-                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
-                if (!!updateLHP) alert('Hủy thành công');
-                var listChiTietPhieuLT = await getChiTietPhieuDKByHocKyAndSinhVien(
-                    userLogin.maSinhVien,
-                    selectedHK,
-                    accessToken,
-                    axiosJWT,
-                );
-
-                setListDK(listChiTietPhieuLT);
-                var listChiTietPhieu = await getChiTietPhieuDKByHocKyAndSinhVien(
-                    userLogin.maSinhVien,
-                    selectedHK,
-                    accessToken,
-                    axiosJWT,
-                );
-
-                setListDaDK(listChiTietPhieu);
-            }
-        }
+        } else alert('Lớp học phần này đã khóa không thể hủy');
     };
     function Menu1() {
         showMenu ? setShowMenu(false) : setShowMenu(true);
@@ -538,6 +642,7 @@ function DangKyHocPhan() {
     const handleSelectLHP = async (item) => {
         setListLich([]);
         setSelectedLHP(item);
+
         const getLopHocPhan = await getLopHocPhanByMaLHP(item, accessToken, axiosJWT);
         if (getLopHocPhan.trangThai !== 'Chờ sinh viên đăng ký') {
             alert('Lớp học phần này không được đăng ký!');
@@ -559,116 +664,171 @@ function DangKyHocPhan() {
             alert('Lớp học phần này đã đủ số lượng đăng ký');
         }
     };
-    console.log(listLich);
+
     const clickDangKyHP = async () => {
-        let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-        console.log(getPhieuDangKy.length);
-        if (getPhieuDangKy.length === 0) {
-            let phieuDangKy = {
-                trangThai: '1',
-                sinhVien: userLogin.maSinhVien,
-                hocKy: selectedHK,
-            };
-            const addPhieuDangKy = await themPhieuDangKy(phieuDangKy, accessToken, axiosJWT);
-            console.log(addPhieuDangKy);
+        let listKhongTrung = [];
+        var daLoc;
+        let result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
+        if (result.length > 0) {
+            var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+            if (listALLLichByHK.length > 0) {
+                let loc = new Map();
+                for (let i = 0; i < result.length; i++) {
+                    let isTrungLopHocPhan = false;
+                    for (let j = 0; j < listALLLichByHK.length; j++) {
+                        if (
+                            result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
+                            result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
+                        ) {
+                            // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                            isTrungLopHocPhan = true;
+                            break;
+                        }
+                    }
+                    // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                    if (!isTrungLopHocPhan && listKhongTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1) {
+                        listKhongTrung.push(result[i].nhomThucHanh.lopHocPhan);
+                    }
+                }
+
+                listKhongTrung.forEach((item) => {
+                    if (!loc.has(item.maLopHocPhan)) {
+                        loc.set(item.maLopHocPhan, item);
+                    }
+                });
+
+                daLoc = Array.from(loc.values());
+                console.log(daLoc);
+            } else {
+                daLoc = ['a'];
+            }
         }
 
-        getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-        if (listLich.length > 1 && (selectedLich.length === 0 || selectedLich.nhomThucHanh.tenNhom === 'Nhóm 0')) {
-            alert('Vui lòng chọn nhóm thực hành');
-        } else if (listLich.length === 1) {
-            let chiTietPhieuDangKyLT = {
-                phieuDangKyHocPhan: getPhieuDangKy[0]?.maPhieuDangKy,
-                ngayDangKy: new Date().toISOString().substr(0, 10),
-                loaiDangKyHP: selectedLoai,
-                nhomThucHanh: listLich[0].nhomThucHanh.maNhom,
-            };
-            console.log(chiTietPhieuDangKyLT);
-            var addChiTietPhieuDangKyLT = await themChiTietPhieuDangKy(chiTietPhieuDangKyLT, accessToken, axiosJWT);
-
-            if (!!addChiTietPhieuDangKyLT) {
-                var listChiTietPhieuLT2 = await getChiTietPhieuDKByHocKyAndSinhVien(
+        if (daLoc?.length > 0) {
+            if (selectedLoai === 'LDK002') {
+                const trangThai = 'Học lại';
+                await updateTrangThaiBangDiem(
+                    `${trangThai}`,
                     userLogin.maSinhVien,
-                    selectedHK,
+                    selectedHP.hocPhan.maHocPhan,
                     accessToken,
                     axiosJWT,
                 );
-                console.log(listChiTietPhieuLT2);
-                setListDK(listChiTietPhieuLT2);
-
-                setListLHP([]);
-                setListLich([]);
-                const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
-
-                const lhp = {
-                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
-                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
-                    siSo: getLopHocPhan.siSo,
-                    siSoThuc: getLopHocPhan.siSoThuc + 1,
-                    ngayBatDau: getLopHocPhan.ngayBatDau,
-                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
-                    trangThai: getLopHocPhan.trangThai,
-                    hocPhan: selectedHP.hocPhan.maHocPhan,
-                };
-
-                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
-                if (!!updateLHP) {
-                    alert('Đăng ký học phần thành công!!');
-                }
             }
-        } else {
-            for (let i = 0; i < listLich.length; i++) {
-                if (listLich[i].nhomThucHanh.tenNhom === 'Nhóm 0') {
-                    let chiTietPhieuDangKyLT = {
-                        phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
-                        ngayDangKy: new Date().toISOString().substr(0, 10),
-                        loaiDangKyHP: selectedLoai,
-                        nhomThucHanh: listLich[i].nhomThucHanh.maNhom,
-                    };
-                    var addChiTietPhieuDangKyLT1 = await themChiTietPhieuDangKy(
-                        chiTietPhieuDangKyLT,
+            if (selectedLoai === 'LDK003') {
+                const trangThai = 'Học cải thiện';
+                await updateTrangThaiBangDiem(
+                    `${trangThai}`,
+                    userLogin.maSinhVien,
+                    selectedHP.hocPhan.maHocPhan,
+                    accessToken,
+                    axiosJWT,
+                );
+            }
+            let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
+                userLogin.maSinhVien,
+                selectedHK,
+                accessToken,
+                axiosJWT,
+            );
+            if (getPhieuDangKy.length === 0) {
+                let phieuDangKy = {
+                    trangThai: '1',
+                    sinhVien: userLogin.maSinhVien,
+                    hocKy: selectedHK,
+                };
+                const addPhieuDangKy = await themPhieuDangKy(phieuDangKy, accessToken, axiosJWT);
+            }
+            getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+            if (listLich.length > 1 && (selectedLich.length === 0 || selectedLich.nhomThucHanh.tenNhom === 'Nhóm 0')) {
+                alert('Vui lòng chọn nhóm thực hành');
+            } else if (listLich.length === 1) {
+                let chiTietPhieuDangKyLT = {
+                    phieuDangKyHocPhan: getPhieuDangKy[0]?.maPhieuDangKy,
+                    ngayDangKy: new Date().toISOString().substr(0, 10),
+                    loaiDangKyHP: selectedLoai,
+                    nhomThucHanh: listLich[0].nhomThucHanh.maNhom,
+                };
+                var addChiTietPhieuDangKyLT;
+                addChiTietPhieuDangKyLT = await themChiTietPhieuDangKy(chiTietPhieuDangKyLT, accessToken, axiosJWT);
+                if (!!addChiTietPhieuDangKyLT) {
+                    var listChiTietPhieuLT2 = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin.maSinhVien,
+                        selectedHK,
                         accessToken,
                         axiosJWT,
                     );
+                    setListDK(listChiTietPhieuLT2);
+                    setListLHP([]);
+                    setListLich([]);
+                    const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+                    const lhp = {
+                        maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                        tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                        siSo: getLopHocPhan.siSo,
+                        siSoThuc: getLopHocPhan.siSoThuc + 1,
+                        ngayBatDau: getLopHocPhan.ngayBatDau,
+                        ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                        trangThai: getLopHocPhan.trangThai,
+                        hocPhan: selectedHP.hocPhan.maHocPhan,
+                    };
+                    const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                    if (!!updateLHP) {
+                        alert('Đăng ký học phần thành công!!');
+                    }
                 }
-            }
-            let chiTietPhieuDangKyTH = {
-                phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
-                ngayDangKy: new Date().toISOString().substr(0, 10),
-                loaiDangKyHP: selectedLoai,
-                nhomThucHanh: selectedLich.nhomThucHanh?.maNhom,
-            };
-            var addChiTietPhieuDangKyTH = await themChiTietPhieuDangKy(chiTietPhieuDangKyTH, accessToken, axiosJWT);
-            if (!!addChiTietPhieuDangKyTH && !!addChiTietPhieuDangKyLT1) {
-                var listChiTietPhieu1 = await getChiTietPhieuDKByHocKyAndSinhVien(
-                    userLogin?.maSinhVien,
-                    selectedHK,
-                    accessToken,
-                    axiosJWT,
-                );
-                console.log(listChiTietPhieu1);
-
-                setListDK(listChiTietPhieu1);
-                setListLHP([]);
-                setListLich([]);
-                const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
-
-                const lhp = {
-                    maLopHocPhan: getLopHocPhan.maLopHocPhan,
-                    tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
-                    siSo: getLopHocPhan.siSo,
-                    siSoThuc: getLopHocPhan.siSoThuc + 1,
-                    ngayBatDau: getLopHocPhan.ngayBatDau,
-                    ngayKetThuc: getLopHocPhan.ngayKetThuc,
-                    trangThai: getLopHocPhan.trangThai,
-                    hocPhan: selectedHP.hocPhan.maHocPhan,
+            } else {
+                for (let i = 0; i < listLich.length; i++) {
+                    if (listLich[i].nhomThucHanh.tenNhom === 'Nhóm 0') {
+                        let chiTietPhieuDangKyLT = {
+                            phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                            ngayDangKy: new Date().toISOString().substr(0, 10),
+                            loaiDangKyHP: selectedLoai,
+                            nhomThucHanh: listLich[i].nhomThucHanh.maNhom,
+                        };
+                        var addChiTietPhieuDangKyLT1 = await themChiTietPhieuDangKy(
+                            chiTietPhieuDangKyLT,
+                            accessToken,
+                            axiosJWT,
+                        );
+                    }
+                }
+                let chiTietPhieuDangKyTH = {
+                    phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                    ngayDangKy: new Date().toISOString().substr(0, 10),
+                    loaiDangKyHP: selectedLoai,
+                    nhomThucHanh: selectedLich.nhomThucHanh?.maNhom,
                 };
-
-                const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
-                if (!!updateLHP) {
-                    alert('Đăng ký học phần thành công!!');
+                var addChiTietPhieuDangKyTH = await themChiTietPhieuDangKy(chiTietPhieuDangKyTH, accessToken, axiosJWT);
+                if (!!addChiTietPhieuDangKyTH && !!addChiTietPhieuDangKyLT1) {
+                    var listChiTietPhieu1 = await getChiTietPhieuDKByHocKyAndSinhVien(
+                        userLogin?.maSinhVien,
+                        selectedHK,
+                        accessToken,
+                        axiosJWT,
+                    );
+                    setListDK(listChiTietPhieu1);
+                    setListLHP([]);
+                    setListLich([]);
+                    const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+                    const lhp = {
+                        maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                        tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                        siSo: getLopHocPhan.siSo,
+                        siSoThuc: getLopHocPhan.siSoThuc + 1,
+                        ngayBatDau: getLopHocPhan.ngayBatDau,
+                        ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                        trangThai: getLopHocPhan.trangThai,
+                        hocPhan: selectedHP.hocPhan.maHocPhan,
+                    };
+                    const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                    if (!!updateLHP) {
+                        alert('Đăng ký học phần thành công!!');
+                    }
                 }
             }
+        } else {
+            alert('Lớp học phần này trùng lịch học');
         }
     };
 
@@ -680,30 +840,16 @@ function DangKyHocPhan() {
         // Kiểm tra giá trị mới của state check sau khi đã được cập nhật
         setListLHP([]);
         const maLHP = [];
-        console.log(selectedHP);
 
-        const listKhongTrung = [];
+        let listKhongTrung = [];
         if (checkTrung === true) {
             for (let i = 0; i < listLHP?.length; i++) {
-                console.log(listLHP[i].maLopHocPhan);
                 maLHP.push(listLHP[i].maLopHocPhan);
             }
-            console.log(maLHP);
 
             const LocLich = async (maLHP) => {
                 let result = await getLichTheoLHP(maLHP, accessToken, axiosJWT);
                 if (result.length > 0) {
-                    let map = new Map();
-
-                    result.forEach((item) => {
-                        if (!map.has(item.nhomThucHanh?.maNhom)) {
-                            map.set(item.nhomThucHanh?.maNhom, item);
-                        }
-                    });
-
-                    let filteredList = Array.from(map.values());
-                    console.log(filteredList);
-
                     var listALLLichByHK = await getLichDaDKTheoHK(
                         userLogin.maSinhVien,
                         selectedHK,
@@ -711,34 +857,29 @@ function DangKyHocPhan() {
                         axiosJWT,
                     );
                     if (listALLLichByHK.length > 0) {
-                        let map = new Map();
                         let loc = new Map();
 
-                        listALLLichByHK.forEach((item) => {
-                            if (!map.has(item.nhomThucHanh?.maNhom)) {
-                                map.set(item.nhomThucHanh?.maNhom, item);
-                            }
-                        });
-
-                        const lichHoc = Array.from(map.values());
-
-                        // It then iterates over the filteredList array and the lichHoc array to compare their properties.
-                        for (let i = 0; i < filteredList.length; i++) {
-                            for (let j = 0; j < lichHoc.length; j++) {
-                                // If the day of the week and the caHoc.tenCaHoc property of the filteredList item
-                                // do not match with the lichHoc item, it adds the filteredList item to the listKhongTrung array.
+                        for (let i = 0; i < result.length; i++) {
+                            let isTrungLopHocPhan = false;
+                            for (let j = 0; j < listALLLichByHK.length; j++) {
                                 if (
-                                    days[new Date(filteredList[i].ngayHoc).getDay()] !==
-                                        days[new Date(lichHoc[j].ngayHoc).getDay()] ||
-                                    filteredList[i].caHoc.tenCaHoc !== lichHoc[j].caHoc.tenCaHoc
+                                    result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
+                                    result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
                                 ) {
-                                    console.log(filteredList[i].nhomThucHanh.lopHocPhan);
-                                    listKhongTrung.push(filteredList[i].nhomThucHanh.lopHocPhan);
-
-                                    // It then removes duplicates from the listKhongTrung array by converting it to a Set and then back to an array.
+                                    // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                                    isTrungLopHocPhan = true;
+                                    break;
                                 }
                             }
+                            // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                            if (
+                                !isTrungLopHocPhan &&
+                                listKhongTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1
+                            ) {
+                                listKhongTrung.push(result[i].nhomThucHanh.lopHocPhan);
+                            }
                         }
+                        console.log(listKhongTrung);
                         listKhongTrung.forEach((item) => {
                             if (!loc.has(item.maLopHocPhan)) {
                                 loc.set(item.maLopHocPhan, item);
@@ -746,6 +887,7 @@ function DangKyHocPhan() {
                         });
 
                         let daLoc = Array.from(loc.values());
+                        console.log(daLoc);
                         setListLHP(daLoc);
                         // const uniqueArr = [...new Set(listKhongTrung)];
 
@@ -800,8 +942,7 @@ function DangKyHocPhan() {
 
         return nodeDieuKien;
     };
-    console.log(selectedLoai);
-    console.log(listHocPhan);
+
     return (
         <div className="h-max w-full bg-gray-100 flex flex-row relative">
             <span className="w-1/12 mt-10">

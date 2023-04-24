@@ -15,12 +15,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getHocPhanTheoHocKy } from '../../service/hocPhanService';
 import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
+import { getBangDiemDat } from '../../service/lopHocPhanService';
 import {
     getPhieuDKByHocKyMaSinhVien,
     themPhieuDangKy,
     themChiTietPhieuDangKy,
     getChiTietPhieuDKByHocKyAndSinhVien,
 } from '../../service/phieuDKHP';
+import BieuDo from '../../components/BieuDo/bieuDo';
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 function Home() {
     const cx = classNames.bind(style);
@@ -32,6 +35,9 @@ function Home() {
     const [listHK, setListHK] = useState([]);
     const [listDaDK, setListDaDK] = useState([]);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
+
+    // Kích thước của biểu đồ
+
     useEffect(() => {
         const getHocKyByKhoaHoc = async () => {
             try {
@@ -79,25 +85,40 @@ function Home() {
         getLopHocPhanByHK();
     }, [selectedHK]);
     //console.log(listLopHocPhanByHK);
+    const [arr, setArr] = useState([]);
+    useEffect(() => {
+        const bangDiemDat = async () => {
+            const listBangDiemDat = await getBangDiemDat(userLogin.maSinhVien, accessToken, axiosJWT);
+            setArr(listBangDiemDat);
+        };
+        bangDiemDat();
+    }, [userLogin]);
+    const TCDaHoc = () => {
+        let tinChiDat = 0;
+        for (let i = 0; i < arr.length; i++) {
+            tinChiDat =
+                tinChiDat +
+                (arr[i].hocPhan.monHoc.soTCLT ? arr[i].hocPhan.monHoc.soTCLT : 0) +
+                (arr[i].hocPhan.monHoc.soTCTH ? arr[i].hocPhan.monHoc.soTCTH : 0);
+        }
+
+        return tinChiDat;
+    };
+    console.log(TCDaHoc());
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [
             {
                 label: 'Số tín chỉ',
-                data: [80, 146],
+                data: [userLogin?.lopHoc?.nganhHoc?.tongTinChi - TCDaHoc(), TCDaHoc()],
                 backgroundColor: ['#01BAF2', '#71BF45'],
                 // borderColor: ['green', 'blue'],
             },
         ],
     };
 
-    const options = ['HK1 (2021-2022)', 'HK1 (2021-2022)', 'HK1 (2021-2022)'];
-    const [selectedOption, setSelectedOption] = useState(options[0]);
     const navigate = useNavigate();
 
-    function handleChange(event) {
-        setSelectedOption(event.target.value);
-    }
     const handleChangeHK = (event) => {
         setSelectedHK(event.target.value);
     };
@@ -107,7 +128,7 @@ function Home() {
 
     return (
         <>
-            <div className={cx('flex w-full h-full justify-start bg-slate-300')}>
+            <div className={cx('flex w-full h-max justify-start bg-slate-300')}>
                 <div className="w-1/12 "></div>
                 <div className=" flex flex-col w-10/12 h-full">
                     <div className=" flex flex-row">
@@ -216,7 +237,7 @@ function Home() {
                     </div>
 
                     <div className="flex h-full ">
-                        <div className="w-2/3 pl-5 pr-5 ">
+                        <div className="w-2/3 pl-5 pr-5 pb-2 ">
                             <div className="">
                                 <div className=" flex w-full justify-between">
                                     <ItemMenuHome
@@ -242,36 +263,38 @@ function Home() {
                                 </div>
                             </div>
                             <div className="flex h-80 mt-3">
-                                <div className="w-8/12 pr-3">
-                                    <div className="h-full  p-2 flex bg-white d border  rounded ">
-                                        <div className="w-full ml-3 mr-3">
-                                            <div className="flex justify-between items-center  h-10  border-b-2">
+                                <div className="w-8/12 pr-3 ">
+                                    <div className="h-full pl-0 p-2 flex bg-white d border  rounded ">
+                                        <div className="w-full  mr-3">
+                                            <div className="flex justify-between items-center mr-7 h-10  border-b-2">
                                                 <div>
                                                     {' '}
-                                                    <h1 className="text-xl flex text-sv-text-2 font-bold  ">
+                                                    <h1 className="text-xl ml-2 flex text-sv-text-2 font-bold  ">
                                                         Kết quả học tập
                                                     </h1>
                                                 </div>
                                                 <div className="flex items-center border  border-sv-blue-4 rounded">
                                                     <select
                                                         className="text-sv-text-2 border  border-sv-blue-4 "
-                                                        value={selectedOption}
-                                                        onChange={handleChange}
+                                                        value={selectedHK}
+                                                        onChange={handleChangeHK}
                                                     >
-                                                        {/* {options.map((option, index) => (
-                                                            <option key={index} value={option}>
-                                                                {option}
+                                                        {listHK?.map((option) => (
+                                                            <option key={option.maHocKy} value={option.maHocKy}>
+                                                                {option.tenHocKy}
                                                             </option>
-                                                        ))} */}
+                                                        ))}
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div></div>
+                                            <div className="ml-0">
+                                                <BieuDo hocKy={selectedHK} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-4/12">
-                                    <div className="h-full  p-2 flex bg-white d border  rounded ">
+                                <div className="w-4/12 ">
+                                    <div className="h-80 mb-20 p-2 flex bg-white d border  rounded">
                                         <div className="w-full  mr-3">
                                             <div className="flex justify-between items-center  h-10  border-b-2">
                                                 <div>
@@ -281,17 +304,20 @@ function Home() {
                                                     </h1>
                                                 </div>
                                             </div>
-                                            <div>
+                                            <div className="w-full h-64">
                                                 <Doughnut data={dataTinChi} />
+                                                <div className="text-center">
+                                                    {TCDaHoc() + '/' + userLogin?.lopHoc?.nganhHoc?.tongTinChi}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="w-1/3">
-                            <div className="flex h-full bg-white d border border-white rounded">
-                                <div className="w-full ml-3 mr-3">
+                        <div className="w-1/3 pb-2 ">
+                            <div className="flex h-full  bg-white d border border-white rounded">
+                                <div className="w-full ml-3 mr-3 ">
                                     <div className="flex justify-between items-center  h-10  border-b-2">
                                         <div>
                                             {' '}
