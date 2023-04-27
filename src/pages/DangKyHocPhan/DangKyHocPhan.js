@@ -61,7 +61,7 @@ function DangKyHocPhan() {
             try {
                 if (!!userLogin.khoaHoc) {
                     const startYear = userLogin.khoaHoc?.tenKhoaHoc.substring(0, 4);
-                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5);
+                    const endYear = userLogin.khoaHoc?.tenKhoaHoc.substring(5) * 1 + 2;
                     const list = await getHocKyTheoKhoaHoc(
                         `${startYear}-08-01`,
                         `${endYear}-06-01`,

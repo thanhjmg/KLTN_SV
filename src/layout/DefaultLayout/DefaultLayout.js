@@ -109,7 +109,7 @@ function DefaultLayout({ children }) {
                 await updatePassword(user.maSinhVien, matKhauMoi, accessToken, axiosJWT);
                 alert('Cập nhật mật khẩu thành công');
                 handleCloseModal();
-            } else alert('Mật khẩu mới không trùng với mật khẩu mới');
+            } else alert('Mật khẩu mới và ô xác nhận mật khẩu mới không giống nhau');
         } else alert('Mật khẩu cũ không chính xác');
     };
 
