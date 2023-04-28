@@ -69,6 +69,7 @@ function DangKyHocPhan() {
                         axiosJWT,
                     );
                     setListHK(list);
+                    console.log(list);
                     if (list.length > 0) {
                         setSelectedHK(list[0].maHocKy);
                     }
@@ -669,6 +670,7 @@ function DangKyHocPhan() {
     };
 
     const clickDangKyHP = async () => {
+        console.log(listLich);
         let listKhongTrung = [];
         var daLoc;
         let result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
