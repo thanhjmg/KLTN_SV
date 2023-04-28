@@ -456,13 +456,15 @@ function DangKyHocPhan() {
                 countDK++;
             }
         }
-
+        console.log(countDK);
         if (countDK > 0) {
             alert('Bạn chưa đủ điều kiện để đăng ký môn học này');
+            return;
         } else {
             let result = await getLopHocPhanTheoMaHP(item?.hocPhan?.maHocPhan, selectedHK, accessToken, axiosJWT);
-            let arrTemp = result.filter(
-                (e) => e.trangThai === 'Chờ sinh viên đăng ký' || e.trangThai === 'Đang lêm kế hoạch',
+            console.log(result);
+            let arrTemp = result?.filter(
+                (e) => e.trangThai === 'Chờ sinh viên đăng ký' || e.trangThai === 'Đang lên kế hoạch',
             );
             setListLHP(arrTemp);
         }
@@ -599,6 +601,7 @@ function DangKyHocPhan() {
                         ngayKetThuc: getLopHocPhan.ngayKetThuc,
                         trangThai: getLopHocPhan.trangThai,
                         hocPhan: selectedHP.hocPhan?.maHocPhan,
+                        hocKy: selectedHK,
                     };
 
                     const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
@@ -771,6 +774,7 @@ function DangKyHocPhan() {
                         ngayKetThuc: getLopHocPhan.ngayKetThuc,
                         trangThai: getLopHocPhan.trangThai,
                         hocPhan: selectedHP.hocPhan.maHocPhan,
+                        hocKy: selectedHK,
                     };
                     const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
                     if (!!updateLHP) {

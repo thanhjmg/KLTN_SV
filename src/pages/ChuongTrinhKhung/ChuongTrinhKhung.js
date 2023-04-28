@@ -12,6 +12,7 @@ import { getChuongTrinhKhungByMaSV } from '~/service/hocPhanService';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
+import { getBangDiemCuaSV } from '~/service/lopHocPhanService';
 const cx = classNames.bind(style);
 
 var sttMon = 1;
@@ -27,6 +28,7 @@ function ChuongTrinhKhung() {
     const [listHocPhan, setListHocPhan] = useState();
     const [listHocKy, setListHocKy] = useState();
     const [display, setDisplay] = useState('');
+    const [listBangDiemSV, setListBangDiemSV] = useState();
 
     var tongSoTCBB = 0,
         tongSoTCTC = 0;
@@ -97,15 +99,15 @@ function ChuongTrinhKhung() {
 
     useEffect(() => {
         const getChuongTrinhKhung = async () => {
-            let result = await getChuongTrinhKhungByMaSV(currSV.maSinhVien, accessToken, axiosJWT);
-            console.log(result);
+            let result = await getChuongTrinhKhungByMaSV(currSV?.maSinhVien, accessToken, axiosJWT);
+            //console.log(result);
             setListHocPhan(result);
         };
         const getHocKyByKhoaHoc = async () => {
             try {
                 if (!!currSV.khoaHoc) {
-                    const startYear = currSV.khoaHoc?.tenKhoaHoc.substring(0, 4);
-                    const endYear = currSV.khoaHoc?.tenKhoaHoc.substring(5);
+                    const startYear = currSV?.khoaHoc?.tenKhoaHoc.substring(0, 4);
+                    const endYear = currSV?.khoaHoc?.tenKhoaHoc.substring(5);
                     var list = await getHocKyTheoKhoaHoc(
                         `${startYear}-08-01`,
                         `${endYear}-06-01`,
@@ -118,8 +120,14 @@ function ChuongTrinhKhung() {
                 console.log(error);
             }
         };
+        const getBangDiem = async () => {
+            let result = await getBangDiemCuaSV(currSV?.maSinhVien, accessToken, axiosJWT);
+            //console.log(result);
+            setListBangDiemSV(result);
+        };
         getHocKyByKhoaHoc();
         getChuongTrinhKhung();
+        getBangDiem();
     }, []);
     return (
         <div className="w-full h-max bg-gray-100 flex flex-row pb-6">
@@ -150,89 +158,148 @@ function ChuongTrinhKhung() {
                                     </tr>
                                 </thead>
 
-                                {listHocKy?.map((item, index) => (
-                                    <tbody key={item.maHocKy + index}>
-                                        <tr
-                                            className=" bg-blue-100 hover:cursor-pointer font-bold text-sv-blue-5 transition delay-700"
-                                            onClick={() => handleDisplay(item.maHocKy)}
-                                        >
-                                            <td colSpan={4}>{item.tenHocKy}</td>
-                                            <td></td>
-                                            <td colSpan={5}></td>
-                                        </tr>
+                                {listHocKy?.map((item, index) => {
+                                    return (
+                                        <tbody key={item.maHocKy + index}>
+                                            <tr
+                                                className=" bg-blue-100 hover:cursor-pointer font-bold text-sv-blue-5 transition delay-700"
+                                                onClick={() => handleDisplay(item.maHocKy)}
+                                            >
+                                                <td colSpan={4}>{item.tenHocKy}</td>
+                                                <td></td>
+                                                <td colSpan={5}></td>
+                                            </tr>
 
-                                        <tr className={display === `${item.maHocKy}` ? ' hidden ' : ''}>
-                                            <td colSpan={10}></td>
-                                        </tr>
-                                        <tr className={display === `${item.maHocKy}` ? ' ' : ' hidden '}>
-                                            <td colSpan={4} className="font-bold text-sv-blue-5 ">
-                                                Học phần bắt buộc
-                                            </td>
-                                            <td className="font-bold text-sv-blue-5 "></td>
-                                            <td colSpan={3} className="font-bold text-sv-blue-5 "></td>
-                                        </tr>
-                                        {listHocPhan?.map((itemSub, indexSub1) =>
-                                            itemSub.trangThai === 'Bắt buộc' &&
-                                            itemSub.hocKy.maHocKy === item.maHocKy ? (
-                                                <tr
-                                                    className={display === `${item.maHocKy}` ? ' ' : ' hidden '}
-                                                    key={item + indexSub1 + 'sub'}
-                                                >
-                                                    <td>{sttHP++}</td>
-                                                    <td align="left">{itemSub.hocPhan.tenHocPhan}</td>
-                                                    <td>{itemSub.hocPhan.maHocPhan}</td>
-                                                    <td>{renderDanhSachDieuKien(itemSub.hocPhan.monHoc)}</td>
-                                                    <td>
-                                                        {itemSub.hocPhan.monHoc.soTCLT + itemSub.hocPhan.monHoc.soTCTH}
-                                                    </td>
+                                            <tr className={display === `${item.maHocKy}` ? ' hidden ' : ''}>
+                                                <td colSpan={10}></td>
+                                            </tr>
+                                            <tr className={display === `${item.maHocKy}` ? ' ' : ' hidden '}>
+                                                <td colSpan={4} className="font-bold text-sv-blue-5 ">
+                                                    Học phần bắt buộc
+                                                </td>
+                                                <td className="font-bold text-sv-blue-5 "></td>
+                                                <td colSpan={3} className="font-bold text-sv-blue-5 "></td>
+                                            </tr>
+                                            {listHocPhan?.map((itemSub, indexSub1) => {
+                                                let diem = listBangDiemSV.find(
+                                                    (e) => e.hocPhan.maHocPhan === itemSub.hocPhan.maHocPhan,
+                                                );
+                                                let pass = listBangDiemSV.find(
+                                                    (e) =>
+                                                        e.hocPhan.maHocPhan === itemSub.hocPhan.maHocPhan &&
+                                                        e.trangThai === 'Đạt',
+                                                );
+                                                //console.log(pass);
+                                                return itemSub.trangThai === 'Bắt buộc' &&
+                                                    itemSub.hocKy.maHocKy === item.maHocKy ? (
+                                                    <tr
+                                                        className={
+                                                            display === `${item.maHocKy}`
+                                                                ? ` ${!!diem ? 'bg-orange-100' : ''} `
+                                                                : `hidden `
+                                                        }
+                                                        key={item + indexSub1 + 'sub'}
+                                                    >
+                                                        <td>{sttHP++}</td>
+                                                        <td align="left">{itemSub.hocPhan.tenHocPhan}</td>
+                                                        <td>{itemSub.hocPhan.maHocPhan}</td>
+                                                        <td>{renderDanhSachDieuKien(itemSub.hocPhan.monHoc)}</td>
+                                                        <td>
+                                                            {itemSub.hocPhan.monHoc.soTCLT +
+                                                                itemSub.hocPhan.monHoc.soTCTH}
+                                                        </td>
 
-                                                    <td>{itemSub.hocPhan.monHoc.soTCLT * 15}</td>
-                                                    <td>{itemSub.hocPhan.monHoc.soTCTH * 30}</td>
+                                                        <td>{itemSub.hocPhan.monHoc.soTCLT * 15}</td>
+                                                        <td>{itemSub.hocPhan.monHoc.soTCTH * 30}</td>
 
-                                                    <td align="center">
-                                                        <AiFillCloseCircle color="red" size={22}></AiFillCloseCircle>
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                <></>
-                                            ),
-                                        )}
-                                        <tr className={display === `${item.maHocKy}` ? ' ' : ' hidden '}>
-                                            <td colSpan={4} className="font-bold text-sv-blue-5 ">
-                                                Học phần tự chọn
-                                            </td>
-                                            <td className="font-bold text-sv-blue-5 ">{item.soTC}</td>
-                                            <td colSpan={3} className="font-bold text-sv-blue-5 "></td>
-                                        </tr>
-                                        {listHocPhan?.map((itemSub, indexSub2) =>
-                                            itemSub.trangThai === 'Tự chọn' &&
-                                            itemSub.hocKy.maHocKy === item.maHocKy ? (
-                                                <tr
-                                                    className={display === `${item.maHocKy}` ? ' ' : ' hidden '}
-                                                    key={item + indexSub2 + 'sub'}
-                                                >
-                                                    <td>{sttHP++}</td>
-                                                    <td align="left">{itemSub.hocPhan.tenHocPhan}</td>
-                                                    <td>{itemSub.hocPhan.maHocPhan}</td>
-                                                    <td>{renderDanhSachDieuKien(itemSub.hocPhan.monHoc)}</td>
-                                                    <td>
-                                                        {itemSub.hocPhan.monHoc.soTCLT + itemSub.hocPhan.monHoc.soTCTH}
-                                                    </td>
+                                                        <td align="center">
+                                                            <div
+                                                                className={
+                                                                    display === `${item.maHocKy}`
+                                                                        ? ` ${!!diem ? '' : 'hidden'} `
+                                                                        : `hidden `
+                                                                }
+                                                            >
+                                                                {!!pass ? (
+                                                                    <BsFillCheckCircleFill color="green"></BsFillCheckCircleFill>
+                                                                ) : (
+                                                                    <AiFillCloseCircle
+                                                                        color="red"
+                                                                        size={22}
+                                                                    ></AiFillCloseCircle>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    <></>
+                                                );
+                                            })}
+                                            <tr className={display === `${item.maHocKy}` ? ' ' : ' hidden '}>
+                                                <td colSpan={4} className="font-bold text-sv-blue-5 ">
+                                                    Học phần tự chọn
+                                                </td>
+                                                <td className="font-bold text-sv-blue-5 ">{item.soTC}</td>
+                                                <td colSpan={3} className="font-bold text-sv-blue-5 "></td>
+                                            </tr>
+                                            {listHocPhan?.map((itemSub, indexSub2) => {
+                                                let diem = listBangDiemSV.find(
+                                                    (e) => e.hocPhan.maHocPhan === itemSub.hocPhan.maHocPhan,
+                                                );
+                                                let pass = listBangDiemSV.find(
+                                                    (e) =>
+                                                        e.hocPhan.maHocPhan === itemSub.hocPhan.maHocPhan &&
+                                                        e.trangThai === 'Đạt',
+                                                );
+                                                return itemSub.trangThai === 'Tự chọn' &&
+                                                    itemSub.hocKy.maHocKy === item.maHocKy ? (
+                                                    <tr
+                                                        className={
+                                                            display === `${item.maHocKy}`
+                                                                ? ` ${!!diem ? 'bg-orange-100' : ''} `
+                                                                : `hidden `
+                                                        }
+                                                        key={item + indexSub2 + 'sub'}
+                                                    >
+                                                        <td>{sttHP++}</td>
+                                                        <td align="left">{itemSub.hocPhan.tenHocPhan}</td>
+                                                        <td>{itemSub.hocPhan.maHocPhan}</td>
+                                                        <td>{renderDanhSachDieuKien(itemSub.hocPhan.monHoc)}</td>
+                                                        <td>
+                                                            {itemSub.hocPhan.monHoc.soTCLT +
+                                                                itemSub.hocPhan.monHoc.soTCTH}
+                                                        </td>
 
-                                                    <td>{itemSub.hocPhan.monHoc.soTCLT * 15}</td>
-                                                    <td>{itemSub.hocPhan.monHoc.soTCTH * 30}</td>
+                                                        <td>{itemSub.hocPhan.monHoc.soTCLT * 15}</td>
+                                                        <td>{itemSub.hocPhan.monHoc.soTCTH * 30}</td>
 
-                                                    <td align="center">
-                                                        <AiFillCloseCircle color="red" size={22}></AiFillCloseCircle>
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                <></>
-                                            ),
-                                        )}
-                                    </tbody>
-                                ))}
-                                <tr className="bg-blue-100">
+                                                        <td align="center">
+                                                            <div
+                                                                className={
+                                                                    display === `${item.maHocKy}`
+                                                                        ? ` ${!!diem ? '' : 'hidden'} `
+                                                                        : `hidden `
+                                                                }
+                                                            >
+                                                                {!!pass ? (
+                                                                    <BsFillCheckCircleFill color="green"></BsFillCheckCircleFill>
+                                                                ) : (
+                                                                    <AiFillCloseCircle
+                                                                        color="red"
+                                                                        size={22}
+                                                                    ></AiFillCloseCircle>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    <></>
+                                                );
+                                            })}
+                                        </tbody>
+                                    );
+                                })}
+                                {/* <tr className="bg-blue-100">
                                     <td className="font-bold text-sv-blue-5 " colSpan={4}>
                                         Tổng số TC yêu cầu
                                     </td>
@@ -252,7 +319,7 @@ function ChuongTrinhKhung() {
                                     </td>
                                     <td className="font-bold text-red-500 ">{tongSoTCTC}</td>
                                     <td colSpan={5}></td>
-                                </tr>
+                                </tr> */}
                             </table>
                         </div>
                     </div>
@@ -263,7 +330,7 @@ function ChuongTrinhKhung() {
                         </i>
                     </div>
                     <div className="flex flex-row ml-2 mt-4 items-center text-gray-400 text-xs pb-2">
-                        <div className="h-4 w-10 bg-blue-200"></div>
+                        <div className="h-4 w-10 bg-orange-100"></div>
                         <div className="ml-2 h-4 flex items-center">
                             <i>Môn học, học phần đã (hoặc đang) học</i>
                         </div>

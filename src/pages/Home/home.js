@@ -1,12 +1,13 @@
 import classNames from 'classnames';
 import logo_iuh from './../../images/logo_iuh.png';
 import iuh from './../../images/iuh.jpg';
-import { FaCalendarAlt, FaCalendarCheck, FaRegChartBar, FaBuffer, FaList } from 'react-icons/fa';
+import { FaCalendarAlt, FaCalendarCheck, FaRegChartBar, FaBuffer, FaList, FaAlignJustify } from 'react-icons/fa';
 import ItemMenuHome from '../../components/ItemMenuHome';
 import { useState, useEffect } from 'react';
 import config from '../../configRoutes';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
+import Menu from '../../components/Menu/menu';
 import style from './home.scss';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -34,6 +35,7 @@ function Home() {
     var axiosJWT = getAxiosJWT(dispatch, userLoginData);
     const [listHK, setListHK] = useState([]);
     const [listDaDK, setListDaDK] = useState([]);
+    const [showMenu, setShowMenu] = useState(false);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
 
     // Kích thước của biểu đồ
@@ -126,10 +128,26 @@ function Home() {
         navigate(config.routeConfig.ketQuaHocTap);
     };
 
+    function Menu1() {
+        showMenu ? setShowMenu(false) : setShowMenu(true);
+    }
+
     return (
         <>
             <div className={cx('flex w-full h-max justify-start bg-slate-300')}>
-                <div className="w-1/12 "></div>
+                <div className="w-1/12 ">
+                    <span className="w-1/12 mt-10 ">
+                        <div className="p-2">
+                            {' '}
+                            <FaAlignJustify size={25} onClick={Menu1} />
+                        </div>
+                        <div className={showMenu ? '' : 'hidden'}>
+                            <span className="w-52 absolute  border border-sv-blue-4 bg-white">
+                                <Menu />
+                            </span>
+                        </div>
+                    </span>
+                </div>
                 <div className=" flex flex-col w-10/12 h-full">
                     <div className=" flex flex-row">
                         <div className="w-2/3 p-5">
