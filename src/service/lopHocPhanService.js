@@ -259,3 +259,22 @@ export const getDiemTongKet = async (maSinhVien, maLHP, accessToken, axiosJWT) =
         return null;
     }
 };
+
+export const getBangDiemCuaSV = async (maSV, accessToken, axiosJWT) => {
+    try {
+        const res = await axiosJWT.get('/lophocphan/bangdiem/sv', {
+            params: {
+                maSV: maSV,
+            },
+
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!!res) {
+            return res.data;
+        } else return null;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};

@@ -36,13 +36,14 @@ export const loginUser = async (user, dispatch, navigate) => {
 };
 export const getRefreshToken = async () => {
     try {
-        const res = await httpRequest.post(
+        const res = await httpRequest.get(
             'auth/refresh-token',
-            {},
+
             {
                 withCredentials: true,
             },
         );
+
         return res;
     } catch (error) {
         return null;

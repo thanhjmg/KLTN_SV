@@ -522,6 +522,8 @@ function DangKyHocPhan() {
         getLichDaDK();
     };
     const handleDeleteClick = async (item, index) => {
+        console.log(item);
+
         if (item.nhomThucHanh.lopHocPhan.trangThai !== 'Đã khóa') {
             if (item.loaiDangKyHP.tenLoaiDKHP === 'Học lại') {
                 const trangThai = 'Không đạt';
@@ -601,7 +603,7 @@ function DangKyHocPhan() {
                         ngayBatDau: getLopHocPhan.ngayBatDau,
                         ngayKetThuc: getLopHocPhan.ngayKetThuc,
                         trangThai: getLopHocPhan.trangThai,
-                        hocPhan: selectedHP.hocPhan?.maHocPhan,
+                        hocPhan: item.nhomThucHanh.lopHocPhan.hocPhan.maHocPhan,
                         hocKy: selectedHK,
                     };
 
@@ -670,12 +672,14 @@ function DangKyHocPhan() {
     };
 
     const clickDangKyHP = async () => {
-        console.log(listLich);
         let listKhongTrung = [];
         var daLoc;
         let result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
+
+        console.log(result);
         if (result.length > 0) {
             var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+            console.log(listALLLichByHK);
             if (listALLLichByHK.length > 0) {
                 let loc = new Map();
                 for (let i = 0; i < result.length; i++) {
@@ -709,7 +713,7 @@ function DangKyHocPhan() {
             }
         }
 
-        if (daLoc?.length > 0) {
+        if (daLoc?.length > 0) { 
             if (selectedLoai === 'LDK002') {
                 const trangThai = 'Học lại';
                 await updateTrangThaiBangDiem(
