@@ -23,7 +23,13 @@ import {
     getBangDiemDat,
     getLopHocPhanTheoMaHP,
 } from '../../service/lopHocPhanService';
-import { getLichTheoLHP, themLich, getChiTietLichByMaSinhVienAndLopHP, getLichDaDKTheoHK } from '~/service/lichService';
+import {
+    getLichTheoLHP,
+    themLich,
+    getChiTietLichByMaSinhVienAndLopHP,
+    getLichDaDKTheoHK,
+    getLichTheoLHPAndNhomTH,
+} from '~/service/lichService';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
 import Box from '@mui/material/Box';
 import { FaRegWindowClose } from 'react-icons/fa';
@@ -672,48 +678,82 @@ function DangKyHocPhan() {
     };
 
     const clickDangKyHP = async () => {
-        let listKhongTrung = [];
+        let listTrung = [];
         var daLoc;
-        let result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
-
-        console.log(result);
-        if (result.length > 0) {
-            var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-            console.log(listALLLichByHK);
-            if (listALLLichByHK.length > 0) {
-                let loc = new Map();
-                for (let i = 0; i < result.length; i++) {
-                    let isTrungLopHocPhan = false;
-                    for (let j = 0; j < listALLLichByHK.length; j++) {
-                        if (
-                            result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
-                            result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
-                        ) {
-                            // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
-                            isTrungLopHocPhan = true;
-                            break;
-                        }
-                    }
-                    // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
-                    if (!isTrungLopHocPhan && listKhongTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1) {
-                        listKhongTrung.push(result[i].nhomThucHanh.lopHocPhan);
-                    }
-                }
-
-                listKhongTrung.forEach((item) => {
-                    if (!loc.has(item.maLopHocPhan)) {
-                        loc.set(item.maLopHocPhan, item);
-                    }
-                });
-
-                daLoc = Array.from(loc.values());
-                console.log(daLoc);
-            } else {
-                daLoc = ['a'];
-            }
+        let result;
+        if (listLich.length > 1) {
+            result = await getLichTheoLHPAndNhomTH(
+                selectedLHP,
+                selectedLich.nhomThucHanh.maNhom,
+                accessToken,
+                axiosJWT,
+            );
+        } else {
+            result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
         }
 
-        if (daLoc?.length > 0) { 
+        if (result.length > 0) {
+            var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+
+            if (listALLLichByHK.length > 0) {
+                let locTrung = new Map();
+
+                if (result.length >= listALLLichByHK.length) {
+                    for (let i = 0; i < result.length; i++) {
+                        for (let j = 0; j < listALLLichByHK.length; j++) {
+                            if (
+                                result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
+                                result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
+                            ) {
+                                // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                                if (listTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1) {
+                                    listTrung.push(result[i].nhomThucHanh.lopHocPhan);
+                                }
+                                console.log(listTrung);
+
+                                break;
+                            }
+                        }
+                        // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                    }
+
+                    listTrung.forEach((item) => {
+                        if (!locTrung.has(item.maLopHocPhan)) {
+                            locTrung.set(item.maLopHocPhan, item);
+                        }
+                    });
+
+                    daLoc = Array.from(locTrung.values());
+                } else {
+                    for (let i = 0; i < listALLLichByHK.length; i++) {
+                        for (let j = 0; j < result.length; j++) {
+                            if (
+                                listALLLichByHK[i]?.ngayHoc === result[j]?.ngayHoc &&
+                                listALLLichByHK[i]?.caHoc.maCaHoc === result[j]?.caHoc.maCaHoc
+                            ) {
+                                // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                                if (listTrung.indexOf(result[i]?.nhomThucHanh.lopHocPhan) === -1) {
+                                    listTrung.push(result[i]?.nhomThucHanh.lopHocPhan);
+                                }
+                            }
+                        }
+                        // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                    }
+
+                    listTrung.forEach((item) => {
+                        if (!locTrung.has(item?.maLopHocPhan)) {
+                            locTrung.set(item?.maLopHocPhan, item);
+                        }
+                    });
+
+                    daLoc = Array.from(locTrung.values());
+                }
+            } else {
+                daLoc = [];
+            }
+        }
+        console.log(daLoc);
+        if (daLoc?.length === 0) {
             if (selectedLoai === 'LDK002') {
                 const trangThai = 'Học lại';
                 await updateTrangThaiBangDiem(
