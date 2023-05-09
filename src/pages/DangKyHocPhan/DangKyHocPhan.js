@@ -671,7 +671,7 @@ function DangKyHocPhan() {
             alert('Lớp học phần này đã đủ số lượng đăng ký');
         }
     };
-    let lopHP = listLHP.find((e) => e.maLopHocPhan === selectedLHP);
+    let lopHP = listLHP?.find((e) => e.maLopHocPhan === selectedLHP);
 
     const clickDangKyHP = async () => {
         if (lopHP.trangThai === 'Chờ sinh viên đăng ký') {

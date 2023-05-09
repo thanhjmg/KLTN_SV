@@ -17,6 +17,7 @@ import { getHocPhanTheoHocKy } from '../../service/hocPhanService';
 import { getAxiosJWT } from '~/utils/httpConfigRefreshToken';
 import { getHocKyTheoKhoaHoc } from '../../service/hocKyService';
 import { getBangDiemDat } from '../../service/lopHocPhanService';
+import { getCTKByMaSV } from '../../service/hocPhanService';
 import {
     getPhieuDKByHocKyMaSinhVien,
     themPhieuDangKy,
@@ -37,7 +38,7 @@ function Home() {
     const [listDaDK, setListDaDK] = useState([]);
     const [showMenu, setShowMenu] = useState(false);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
-
+    const [cTK, setCTK] = useState();
     // Kích thước của biểu đồ
 
     useEffect(() => {
@@ -58,7 +59,12 @@ function Home() {
                 console.log(error);
             }
         };
+        const getCTK = async () => {
+            const getCTKTheoSV = await getCTKByMaSV(userLogin.maSinhVien, accessToken, axiosJWT);
+            setCTK(getCTKTheoSV);
+        };
         getHocKyByKhoaHoc();
+        getCTK();
     }, [userLogin]);
 
     const [selectedHK, setSelectedHK] = useState('HK005');
@@ -112,7 +118,7 @@ function Home() {
         datasets: [
             {
                 label: 'Số tín chỉ',
-                data: [userLogin?.lopHoc?.nganhHoc?.tongTinChi - TCDaHoc(), TCDaHoc()],
+                data: [cTK[0].tongSoTinChi - TCDaHoc(), TCDaHoc()],
                 backgroundColor: ['#01BAF2', '#71BF45'],
                 // borderColor: ['green', 'blue'],
             },
@@ -327,7 +333,7 @@ function Home() {
                                             <div className="w-full h-64">
                                                 <Doughnut data={dataTinChi} />
                                                 <div className="text-center">
-                                                    {TCDaHoc() + '/' + userLogin?.lopHoc?.nganhHoc?.tongTinChi}
+                                                    {TCDaHoc() + '/' + cTK[0].tongSoTinChi}
                                                 </div>
                                             </div>
                                         </div>
