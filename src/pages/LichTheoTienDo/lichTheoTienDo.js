@@ -33,8 +33,6 @@ function LichTheoTienDo() {
 
     const [date, setDate] = useState(today);
 
-    console.log(date);
-
     const handleDateChange = (event) => {
         setDate(event.target.value);
     };
@@ -82,6 +80,7 @@ function LichTheoTienDo() {
     const handleChangeHK = async (event) => {
         setSelectedHK(event.target.value);
     };
+
     useEffect(() => {
         const TatCaLich = async () => {
             const listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
@@ -94,7 +93,18 @@ function LichTheoTienDo() {
                 } else {
                     filteredListLich = listALLLichByHK;
                 }
-                setListLich(filteredListLich);
+                let map = new Map();
+                filteredListLich.forEach((item) => {
+                    if (
+                        !map.has(
+                            item.nhomThucHanh?.tenNhom && item.caHoc.tenCaHoc && days[new Date(item.ngayHoc).getDay()],
+                        )
+                    ) {
+                        map.set(item.nhomThucHanh?.tenNhom, item);
+                    }
+                });
+                let filteredList = Array.from(map.values());
+                setListLich(filteredList);
             }
         };
 

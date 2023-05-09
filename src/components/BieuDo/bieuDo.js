@@ -10,6 +10,7 @@ import {
     diemTBLHP,
     getDiemTongKet,
 } from '../../service/lopHocPhanService';
+import tkkqht from '~/images/tkkqht.png';
 
 const BieuDo = ({ hocKy }) => {
     const dispatch = useDispatch();
@@ -131,7 +132,9 @@ const BieuDo = ({ hocKy }) => {
                     <Line type="monotone" dataKey="diemTB" stroke="#ff7300" name="Điểm trung bình" />
                 </ComposedChart>
             ) : (
-                <div className="flex w-full h-60 justify-center items-center    ">Không có dữ liệu</div>
+                <div>
+                    <img src={tkkqht} alt="" className="h-64 w-full" />
+                </div>
             )}
         </>
     );

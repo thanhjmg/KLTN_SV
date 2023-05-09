@@ -75,7 +75,7 @@ function DangKyHocPhan() {
                         axiosJWT,
                     );
                     setListHK(list);
-                    console.log(list);
+
                     if (list.length > 0) {
                         setSelectedHK(list[0].maHocKy);
                     }
@@ -86,7 +86,6 @@ function DangKyHocPhan() {
         };
         getHocKyByKhoaHoc();
     }, [userLogin]);
-    console.log(selectedHK);
 
     const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -463,17 +462,14 @@ function DangKyHocPhan() {
                 countDK++;
             }
         }
-        console.log(countDK);
+
         if (countDK > 0) {
             alert('Bạn chưa đủ điều kiện để đăng ký môn học này');
             return;
         } else {
             let result = await getLopHocPhanTheoMaHP(item?.hocPhan?.maHocPhan, selectedHK, accessToken, axiosJWT);
-            console.log(result);
-            let arrTemp = result?.filter(
-                (e) => e.trangThai === 'Chờ sinh viên đăng ký' || e.trangThai === 'Đang lên kế hoạch',
-            );
-            setListLHP(arrTemp);
+
+            setListLHP(result);
         }
     };
 
@@ -528,9 +524,10 @@ function DangKyHocPhan() {
         getLichDaDK();
     };
     const handleDeleteClick = async (item, index) => {
-        console.log(item);
-
-        if (item.nhomThucHanh.lopHocPhan.trangThai !== 'Đã khóa') {
+        if (
+            item.nhomThucHanh.lopHocPhan.trangThai !== 'Đã khóa' ||
+            item.nhomThucHanh.lopHocPhan.trangThai !== 'Chấp nhận mở lớp'
+        ) {
             if (item.loaiDangKyHP.tenLoaiDKHP === 'Học lại') {
                 const trangThai = 'Không đạt';
                 await updateTrangThaiBangDiem(
@@ -634,7 +631,7 @@ function DangKyHocPhan() {
                     setListDaDK(listChiTietPhieu);
                 }
             }
-        } else alert('Lớp học phần này đã khóa không thể hủy');
+        } else alert('Lớp học phần này không thể hủy');
     };
     function Menu1() {
         showMenu ? setShowMenu(false) : setShowMenu(true);
@@ -656,9 +653,7 @@ function DangKyHocPhan() {
         setSelectedLHP(item);
 
         const getLopHocPhan = await getLopHocPhanByMaLHP(item, accessToken, axiosJWT);
-        if (getLopHocPhan.trangThai !== 'Chờ sinh viên đăng ký') {
-            alert('Lớp học phần này không được đăng ký!');
-        } else if (getLopHocPhan.siSoThuc < getLopHocPhan.siSo) {
+        if (getLopHocPhan.siSoThuc < getLopHocPhan.siSo) {
             let result = await getLichTheoLHP(item, accessToken, axiosJWT);
 
             if (result.length > 0) {
@@ -676,47 +671,65 @@ function DangKyHocPhan() {
             alert('Lớp học phần này đã đủ số lượng đăng ký');
         }
     };
+    let lopHP = listLHP.find((e) => e.maLopHocPhan === selectedLHP);
 
     const clickDangKyHP = async () => {
-        let listTrung = [];
-        var daLoc;
-        let result;
-        if (listLich.length > 1) {
-            result = await getLichTheoLHPAndNhomTH(
-                selectedLHP,
-                selectedLich.nhomThucHanh.maNhom,
-                accessToken,
-                axiosJWT,
-            );
-        } else {
-            result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
-        }
+        if (lopHP.trangThai === 'Chờ sinh viên đăng ký') {
+            let listTrung = [];
+            var daLoc;
+            let result;
+            if (listLich.length > 1) {
+                result = await getLichTheoLHPAndNhomTH(
+                    selectedLHP,
+                    selectedLich.nhomThucHanh.maNhom,
+                    accessToken,
+                    axiosJWT,
+                );
+            } else {
+                result = await getLichTheoLHP(selectedLHP, accessToken, axiosJWT);
+            }
 
-        if (result.length > 0) {
-            var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
+            if (result.length > 0) {
+                var listALLLichByHK = await getLichDaDKTheoHK(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
 
-            if (listALLLichByHK.length > 0) {
-                let locTrung = new Map();
+                if (listALLLichByHK.length > 0) {
+                    let locTrung = new Map();
 
-                if (result.length >= listALLLichByHK.length) {
-                    for (let i = 0; i < result.length; i++) {
-                        for (let j = 0; j < listALLLichByHK.length; j++) {
-                            if (
-                                result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
-                                result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
-                            ) {
-                                // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
-                                if (listTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1) {
-                                    listTrung.push(result[i].nhomThucHanh.lopHocPhan);
+                    if (result.length >= listALLLichByHK.length) {
+                        for (let i = 0; i < result.length; i++) {
+                            for (let j = 0; j < listALLLichByHK.length; j++) {
+                                if (
+                                    result[i]?.ngayHoc === listALLLichByHK[j]?.ngayHoc &&
+                                    result[i]?.caHoc.maCaHoc === listALLLichByHK[j]?.caHoc.maCaHoc
+                                ) {
+                                    // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                                    if (listTrung.indexOf(result[i].nhomThucHanh.lopHocPhan) === -1) {
+                                        listTrung.push(result[i].nhomThucHanh.lopHocPhan);
+                                    }
+
+                                    break;
                                 }
-                                console.log(listTrung);
-
-                                break;
                             }
+                            // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
                         }
-                        // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                    } else {
+                        for (let i = 0; i < listALLLichByHK.length; i++) {
+                            for (let j = 0; j < result.length; j++) {
+                                if (
+                                    listALLLichByHK[i]?.ngayHoc === result[j]?.ngayHoc &&
+                                    listALLLichByHK[i]?.caHoc.maCaHoc === result[j]?.caHoc.maCaHoc
+                                ) {
+                                    // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
+                                    if (listTrung.indexOf(result[i]?.nhomThucHanh.lopHocPhan) === -1) {
+                                        listTrung.push(result[i]?.nhomThucHanh.lopHocPhan);
+                                    }
+                                }
+                            }
+                            // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
+                        }
                     }
 
+                    //lọc Trùng
                     listTrung.forEach((item) => {
                         if (!locTrung.has(item.maLopHocPhan)) {
                             locTrung.set(item.maLopHocPhan, item);
@@ -725,160 +738,151 @@ function DangKyHocPhan() {
 
                     daLoc = Array.from(locTrung.values());
                 } else {
-                    for (let i = 0; i < listALLLichByHK.length; i++) {
-                        for (let j = 0; j < result.length; j++) {
-                            if (
-                                listALLLichByHK[i]?.ngayHoc === result[j]?.ngayHoc &&
-                                listALLLichByHK[i]?.caHoc.maCaHoc === result[j]?.caHoc.maCaHoc
-                            ) {
-                                // Nếu trùng lịch học, đặt biến isTrungLopHocPhan thành true và thoát khỏi vòng lặp.
-                                if (listTrung.indexOf(result[i]?.nhomThucHanh.lopHocPhan) === -1) {
-                                    listTrung.push(result[i]?.nhomThucHanh.lopHocPhan);
-                                }
-                            }
-                        }
-                        // Nếu lớp học phần không trùng lịch học và chưa có trong listKhongTrung, thêm vào listKhongTrung.
-                    }
-
-                    listTrung.forEach((item) => {
-                        if (!locTrung.has(item?.maLopHocPhan)) {
-                            locTrung.set(item?.maLopHocPhan, item);
-                        }
-                    });
-
-                    daLoc = Array.from(locTrung.values());
+                    daLoc = [];
                 }
-            } else {
-                daLoc = [];
             }
-        }
-        console.log(daLoc);
-        if (daLoc?.length === 0) {
-            if (selectedLoai === 'LDK002') {
-                const trangThai = 'Học lại';
-                await updateTrangThaiBangDiem(
-                    `${trangThai}`,
-                    userLogin.maSinhVien,
-                    selectedHP.hocPhan.maHocPhan,
-                    accessToken,
-                    axiosJWT,
-                );
-            }
-            if (selectedLoai === 'LDK003') {
-                const trangThai = 'Học cải thiện';
-                await updateTrangThaiBangDiem(
-                    `${trangThai}`,
-                    userLogin.maSinhVien,
-                    selectedHP.hocPhan.maHocPhan,
-                    accessToken,
-                    axiosJWT,
-                );
-            }
-            let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
-                userLogin.maSinhVien,
-                selectedHK,
-                accessToken,
-                axiosJWT,
-            );
-            if (getPhieuDangKy.length === 0) {
-                let phieuDangKy = {
-                    trangThai: '1',
-                    sinhVien: userLogin.maSinhVien,
-                    hocKy: selectedHK,
-                };
-                const addPhieuDangKy = await themPhieuDangKy(phieuDangKy, accessToken, axiosJWT);
-            }
-            getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(userLogin.maSinhVien, selectedHK, accessToken, axiosJWT);
-            if (listLich.length > 1 && (selectedLich.length === 0 || selectedLich.nhomThucHanh.tenNhom === 'Nhóm 0')) {
-                alert('Vui lòng chọn nhóm thực hành');
-            } else if (listLich.length === 1) {
-                let chiTietPhieuDangKyLT = {
-                    phieuDangKyHocPhan: getPhieuDangKy[0]?.maPhieuDangKy,
-                    ngayDangKy: new Date().toISOString().substr(0, 10),
-                    loaiDangKyHP: selectedLoai,
-                    nhomThucHanh: listLich[0].nhomThucHanh.maNhom,
-                };
-                var addChiTietPhieuDangKyLT;
-                addChiTietPhieuDangKyLT = await themChiTietPhieuDangKy(chiTietPhieuDangKyLT, accessToken, axiosJWT);
-                if (!!addChiTietPhieuDangKyLT) {
-                    var listChiTietPhieuLT2 = await getChiTietPhieuDKByHocKyAndSinhVien(
+
+            if (daLoc?.length === 0) {
+                if (selectedLoai === 'LDK002') {
+                    const trangThai = 'Học lại';
+                    await updateTrangThaiBangDiem(
+                        `${trangThai}`,
                         userLogin.maSinhVien,
-                        selectedHK,
+                        selectedHP.hocPhan.maHocPhan,
                         accessToken,
                         axiosJWT,
                     );
-                    setListDK(listChiTietPhieuLT2);
-                    setListLHP([]);
-                    setListLich([]);
-                    const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
-                    const lhp = {
-                        maLopHocPhan: getLopHocPhan.maLopHocPhan,
-                        tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
-                        siSo: getLopHocPhan.siSo,
-                        siSoThuc: getLopHocPhan.siSoThuc + 1,
-                        ngayBatDau: getLopHocPhan.ngayBatDau,
-                        ngayKetThuc: getLopHocPhan.ngayKetThuc,
-                        trangThai: getLopHocPhan.trangThai,
-                        hocPhan: selectedHP.hocPhan.maHocPhan,
+                }
+                if (selectedLoai === 'LDK003') {
+                    const trangThai = 'Học cải thiện';
+                    await updateTrangThaiBangDiem(
+                        `${trangThai}`,
+                        userLogin.maSinhVien,
+                        selectedHP.hocPhan.maHocPhan,
+                        accessToken,
+                        axiosJWT,
+                    );
+                }
+                let getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
+                    userLogin.maSinhVien,
+                    selectedHK,
+                    accessToken,
+                    axiosJWT,
+                );
+                if (getPhieuDangKy.length === 0) {
+                    let phieuDangKy = {
+                        trangThai: '1',
+                        sinhVien: userLogin.maSinhVien,
                         hocKy: selectedHK,
                     };
-                    const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
-                    if (!!updateLHP) {
-                        alert('Đăng ký học phần thành công!!');
-                    }
+                    const addPhieuDangKy = await themPhieuDangKy(phieuDangKy, accessToken, axiosJWT);
                 }
-            } else {
-                for (let i = 0; i < listLich.length; i++) {
-                    if (listLich[i].nhomThucHanh.tenNhom === 'Nhóm 0') {
-                        let chiTietPhieuDangKyLT = {
-                            phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
-                            ngayDangKy: new Date().toISOString().substr(0, 10),
-                            loaiDangKyHP: selectedLoai,
-                            nhomThucHanh: listLich[i].nhomThucHanh.maNhom,
-                        };
-                        var addChiTietPhieuDangKyLT1 = await themChiTietPhieuDangKy(
-                            chiTietPhieuDangKyLT,
+                getPhieuDangKy = await getPhieuDKByHocKyMaSinhVien(
+                    userLogin.maSinhVien,
+                    selectedHK,
+                    accessToken,
+                    axiosJWT,
+                );
+                if (
+                    listLich.length > 1 &&
+                    (selectedLich.length === 0 || selectedLich.nhomThucHanh.tenNhom === 'Nhóm 0')
+                ) {
+                    alert('Vui lòng chọn nhóm thực hành');
+                } else if (listLich.length === 1) {
+                    let chiTietPhieuDangKyLT = {
+                        phieuDangKyHocPhan: getPhieuDangKy[0]?.maPhieuDangKy,
+                        ngayDangKy: new Date().toISOString().substr(0, 10),
+                        loaiDangKyHP: selectedLoai,
+                        nhomThucHanh: listLich[0].nhomThucHanh.maNhom,
+                    };
+                    var addChiTietPhieuDangKyLT;
+                    addChiTietPhieuDangKyLT = await themChiTietPhieuDangKy(chiTietPhieuDangKyLT, accessToken, axiosJWT);
+                    if (!!addChiTietPhieuDangKyLT) {
+                        var listChiTietPhieuLT2 = await getChiTietPhieuDKByHocKyAndSinhVien(
+                            userLogin.maSinhVien,
+                            selectedHK,
                             accessToken,
                             axiosJWT,
                         );
+                        setListDK(listChiTietPhieuLT2);
+                        setListLHP([]);
+                        setListLich([]);
+                        const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+                        const lhp = {
+                            maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                            tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                            siSo: getLopHocPhan.siSo,
+                            siSoThuc: getLopHocPhan.siSoThuc + 1,
+                            ngayBatDau: getLopHocPhan.ngayBatDau,
+                            ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                            trangThai: getLopHocPhan.trangThai,
+                            hocPhan: selectedHP.hocPhan.maHocPhan,
+                            hocKy: selectedHK,
+                        };
+                        const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                        if (!!updateLHP) {
+                            alert('Đăng ký học phần thành công!!');
+                        }
                     }
-                }
-                let chiTietPhieuDangKyTH = {
-                    phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
-                    ngayDangKy: new Date().toISOString().substr(0, 10),
-                    loaiDangKyHP: selectedLoai,
-                    nhomThucHanh: selectedLich.nhomThucHanh?.maNhom,
-                };
-                var addChiTietPhieuDangKyTH = await themChiTietPhieuDangKy(chiTietPhieuDangKyTH, accessToken, axiosJWT);
-                if (!!addChiTietPhieuDangKyTH && !!addChiTietPhieuDangKyLT1) {
-                    var listChiTietPhieu1 = await getChiTietPhieuDKByHocKyAndSinhVien(
-                        userLogin?.maSinhVien,
-                        selectedHK,
+                } else {
+                    for (let i = 0; i < listLich.length; i++) {
+                        if (listLich[i].nhomThucHanh.tenNhom === 'Nhóm 0') {
+                            let chiTietPhieuDangKyLT = {
+                                phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                                ngayDangKy: new Date().toISOString().substr(0, 10),
+                                loaiDangKyHP: selectedLoai,
+                                nhomThucHanh: listLich[i].nhomThucHanh.maNhom,
+                            };
+                            var addChiTietPhieuDangKyLT1 = await themChiTietPhieuDangKy(
+                                chiTietPhieuDangKyLT,
+                                accessToken,
+                                axiosJWT,
+                            );
+                        }
+                    }
+                    let chiTietPhieuDangKyTH = {
+                        phieuDangKyHocPhan: getPhieuDangKy[0].maPhieuDangKy,
+                        ngayDangKy: new Date().toISOString().substr(0, 10),
+                        loaiDangKyHP: selectedLoai,
+                        nhomThucHanh: selectedLich.nhomThucHanh?.maNhom,
+                    };
+                    var addChiTietPhieuDangKyTH = await themChiTietPhieuDangKy(
+                        chiTietPhieuDangKyTH,
                         accessToken,
                         axiosJWT,
                     );
-                    setListDK(listChiTietPhieu1);
-                    setListLHP([]);
-                    setListLich([]);
-                    const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
-                    const lhp = {
-                        maLopHocPhan: getLopHocPhan.maLopHocPhan,
-                        tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
-                        siSo: getLopHocPhan.siSo,
-                        siSoThuc: getLopHocPhan.siSoThuc + 1,
-                        ngayBatDau: getLopHocPhan.ngayBatDau,
-                        ngayKetThuc: getLopHocPhan.ngayKetThuc,
-                        trangThai: getLopHocPhan.trangThai,
-                        hocPhan: selectedHP.hocPhan.maHocPhan,
-                    };
-                    const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
-                    if (!!updateLHP) {
-                        alert('Đăng ký học phần thành công!!');
+                    if (!!addChiTietPhieuDangKyTH && !!addChiTietPhieuDangKyLT1) {
+                        var listChiTietPhieu1 = await getChiTietPhieuDKByHocKyAndSinhVien(
+                            userLogin?.maSinhVien,
+                            selectedHK,
+                            accessToken,
+                            axiosJWT,
+                        );
+                        setListDK(listChiTietPhieu1);
+                        setListLHP([]);
+                        setListLich([]);
+                        const getLopHocPhan = await getLopHocPhanByMaLHP(selectedLHP, accessToken, axiosJWT);
+                        const lhp = {
+                            maLopHocPhan: getLopHocPhan.maLopHocPhan,
+                            tenLopHocPhan: getLopHocPhan.tenLopHocPhan,
+                            siSo: getLopHocPhan.siSo,
+                            siSoThuc: getLopHocPhan.siSoThuc + 1,
+                            ngayBatDau: getLopHocPhan.ngayBatDau,
+                            ngayKetThuc: getLopHocPhan.ngayKetThuc,
+                            trangThai: getLopHocPhan.trangThai,
+                            hocPhan: selectedHP.hocPhan.maHocPhan,
+                        };
+                        const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
+                        if (!!updateLHP) {
+                            alert('Đăng ký học phần thành công!!');
+                        }
                     }
                 }
+            } else {
+                alert('Lớp học phần này trùng lịch học');
             }
         } else {
-            alert('Lớp học phần này trùng lịch học');
+            alert('Lớp học phần đang ở trạng thái " ' + lopHP.trangThai + '" không được đăng ký');
         }
     };
 
@@ -929,7 +933,7 @@ function DangKyHocPhan() {
                                 listKhongTrung.push(result[i].nhomThucHanh.lopHocPhan);
                             }
                         }
-                        console.log(listKhongTrung);
+
                         listKhongTrung.forEach((item) => {
                             if (!loc.has(item.maLopHocPhan)) {
                                 loc.set(item.maLopHocPhan, item);
@@ -937,7 +941,7 @@ function DangKyHocPhan() {
                         });
 
                         let daLoc = Array.from(loc.values());
-                        console.log(daLoc);
+
                         setListLHP(daLoc);
                         // const uniqueArr = [...new Set(listKhongTrung)];
 
@@ -957,7 +961,7 @@ function DangKyHocPhan() {
             handleSelectHocPhan(selectedHP);
         }
     }, [checkTrung]);
-    console.log(listLHP);
+
     const renderDanhSachDieuKien = (item) => {
         let arrFilterHocTruoc = item.danhSachMonHocHocTruoc.map((monHoc) => {
             return (
