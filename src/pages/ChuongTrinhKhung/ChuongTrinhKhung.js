@@ -100,7 +100,7 @@ function ChuongTrinhKhung() {
     useEffect(() => {
         const getChuongTrinhKhung = async () => {
             let result = await getChuongTrinhKhungByMaSV(currSV?.maSinhVien, accessToken, axiosJWT);
-            //console.log(result);
+            // console.log(result);
             setListHocPhan(result);
         };
         const getHocKyByKhoaHoc = async () => {
@@ -299,11 +299,13 @@ function ChuongTrinhKhung() {
                                         </tbody>
                                     );
                                 })}
-                                {/* <tr className="bg-blue-100">
+                                <tr className="bg-blue-100">
                                     <td className="font-bold text-sv-blue-5 " colSpan={4}>
                                         Tổng số TC yêu cầu
                                     </td>
-                                    <td className="font-bold text-red-500 ">{tongSoTCBB + tongSoTCTC}</td>
+                                    <td className="font-bold text-red-500 ">
+                                        {!!listHocPhan && listHocPhan[0]?.chuongTrinhKhung.tongSoTinChi}
+                                    </td>
                                     <td colSpan={5}></td>
                                 </tr>
                                 <tr className="bg-blue-100">
@@ -317,9 +319,12 @@ function ChuongTrinhKhung() {
                                     <td className="font-bold text-sv-blue-5 " colSpan={4}>
                                         Tổng số TC tự chọn
                                     </td>
-                                    <td className="font-bold text-red-500 ">{tongSoTCTC}</td>
+                                    <td className="font-bold text-red-500 ">
+                                        {!!listHocPhan &&
+                                            listHocPhan[0]?.chuongTrinhKhung.tongSoTinChi * 1 - tongSoTCBB * 1}
+                                    </td>
                                     <td colSpan={5}></td>
-                                </tr> */}
+                                </tr>
                             </table>
                         </div>
                     </div>

@@ -188,7 +188,9 @@ function Home() {
                                             </div>
                                             <div className="flex flex-row text-xs mt-4">
                                                 <p className="mr-2 text-sv-text-1 ">Giới tính:</p>
-                                                <p className="text-sv-text-2 font-bold">{userLogin?.gioiTinh}</p>
+                                                <p className="text-sv-text-2 font-bold">
+                                                    {userLogin?.gioiTinh ? 'Nam' : 'Nữ'}
+                                                </p>
                                             </div>
                                             <div className="flex flex-row text-xs mt-4">
                                                 <p className="mr-2 text-sv-text-1 ">Ngày sinh:</p>
