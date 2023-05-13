@@ -118,7 +118,7 @@ function Home() {
         datasets: [
             {
                 label: 'Số tín chỉ',
-                data: [cTK[0]?.tongSoTinChi - TCDaHoc(), TCDaHoc()],
+                data: [!!cTK && cTK[0]?.tongSoTinChi - TCDaHoc(), TCDaHoc()],
                 backgroundColor: ['#01BAF2', '#71BF45'],
                 // borderColor: ['green', 'blue'],
             },

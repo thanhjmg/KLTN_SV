@@ -129,7 +129,6 @@ function DefaultLayout({ children }) {
 
     //console.log(user);
     dispatch(userLogin(user));
-    console.log(userLoginData);
     if (userLoginData === null) {
         return <Navigate replace to="/login" />;
     } else {
