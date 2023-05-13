@@ -97,14 +97,15 @@ function LichTheoTienDo() {
                 filteredListLich.forEach((item) => {
                     if (
                         !map.has(
-                            item.nhomThucHanh?.tenNhom && item.caHoc.tenCaHoc && days[new Date(item.ngayHoc).getDay()],
+                            item.nhomThucHanh?.maNhom && item.caHoc.tenCaHoc && days[new Date(item.ngayHoc).getDay()],
                         )
                     ) {
-                        map.set(item.nhomThucHanh?.tenNhom, item);
+                        map.set(item.nhomThucHanh?.maNhom, item);
                     }
                 });
                 let filteredList = Array.from(map.values());
                 setListLich(filteredList);
+                console.log(listALLLichByHK);
             }
         };
 

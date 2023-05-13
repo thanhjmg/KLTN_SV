@@ -38,7 +38,7 @@ function Home() {
     const [listDaDK, setListDaDK] = useState([]);
     const [showMenu, setShowMenu] = useState(false);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
-    const [cTK, setCTK] = useState();
+    const [cTK, setCTK] = useState([]);
     // Kích thước của biểu đồ
 
     useEffect(() => {
@@ -118,7 +118,7 @@ function Home() {
         datasets: [
             {
                 label: 'Số tín chỉ',
-                data: [cTK[0].tongSoTinChi - TCDaHoc(), TCDaHoc()],
+                data: [cTK[0]?.tongSoTinChi - TCDaHoc(), TCDaHoc()],
                 backgroundColor: ['#01BAF2', '#71BF45'],
                 // borderColor: ['green', 'blue'],
             },
@@ -333,7 +333,7 @@ function Home() {
                                             <div className="w-full h-64">
                                                 <Doughnut data={dataTinChi} />
                                                 <div className="text-center">
-                                                    {TCDaHoc() + '/' + cTK[0].tongSoTinChi}
+                                                    {TCDaHoc() + '/' + cTK[0]?.tongSoTinChi}
                                                 </div>
                                             </div>
                                         </div>

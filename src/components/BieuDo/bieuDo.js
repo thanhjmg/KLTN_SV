@@ -55,7 +55,7 @@ const BieuDo = ({ hocKy }) => {
 
     useEffect(() => {
         const list = async () => {
-            if (listLHP.length > 0) {
+            if (listLHP?.length > 0) {
                 const newListDiemTB = [];
                 const newListDiemTK = [];
 
@@ -67,7 +67,7 @@ const BieuDo = ({ hocKy }) => {
                         accessToken,
                         axiosJWT,
                     );
-                    console.log(diemTK[0].diemTongKet);
+
                     newListDiemTB.push(diemTB);
                     newListDiemTK.push(diemTK[0].diemTongKet);
                 }

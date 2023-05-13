@@ -871,6 +871,7 @@ function DangKyHocPhan() {
                             ngayKetThuc: getLopHocPhan.ngayKetThuc,
                             trangThai: getLopHocPhan.trangThai,
                             hocPhan: selectedHP.hocPhan.maHocPhan,
+                            hocKy: selectedHK,
                         };
                         const updateLHP = await updateLopHocPhan(lhp, accessToken, axiosJWT);
                         if (!!updateLHP) {
