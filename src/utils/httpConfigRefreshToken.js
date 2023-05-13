@@ -8,7 +8,7 @@ export const getAxiosJWT = (dispatch, currAccount) => {
     var axiosJWT = axios.create({
         baseURL: process.env.REACT_APP_BASE_URL,
     });
-    var token = currAccount.accessToken;
+    var token = currAccount?.accessToken;
     axiosJWT.interceptors.request.use(
         async (config) => {
             var currDate = new Date();
