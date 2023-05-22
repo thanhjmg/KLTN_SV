@@ -39,6 +39,7 @@ function Home() {
     const [showMenu, setShowMenu] = useState(false);
     const [listLopHocPhanByHK, setListHocPhanByHK] = useState([]);
     const [cTK, setCTK] = useState([]);
+    const [selectedHK, setSelectedHK] = useState('');
     // Kích thước của biểu đồ
 
     useEffect(() => {
@@ -53,7 +54,9 @@ function Home() {
                         accessToken,
                         axiosJWT,
                     );
+                    //console.log(list);
                     setListHK(list);
+                    if (!!list) setSelectedHK(list[0]?.maHocKy);
                 }
             } catch (error) {
                 console.log(error);
@@ -67,7 +70,6 @@ function Home() {
         getCTK();
     }, [userLogin]);
 
-    const [selectedHK, setSelectedHK] = useState('HK005');
     //console.log(selectedHK);
     useEffect(() => {
         const getLopHocPhanByHK = async () => {
@@ -77,7 +79,7 @@ function Home() {
                 accessToken,
                 axiosJWT,
             );
-            console.log(getLopHocByHK);
+            //console.log(getLopHocByHK);
             const uniqueListHP = getLopHocByHK.filter((item, index, self) => {
                 return (
                     item.nhomThucHanh.tenNhom === 'Nhóm 0' && // Thêm điều kiện chỉ lấy nhóm thực hành có tenNhom là 'Nhóm 0'
@@ -112,7 +114,7 @@ function Home() {
 
         return tinChiDat;
     };
-    console.log(TCDaHoc());
+    //console.log(TCDaHoc());
     const dataTinChi = {
         labels: ['Số tín chỉ còn lại', 'Số tín chỉ đã học'],
         datasets: [

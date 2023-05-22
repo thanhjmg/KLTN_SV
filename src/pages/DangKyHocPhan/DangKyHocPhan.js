@@ -45,6 +45,9 @@ import {
     themChiTietPhieuDangKy,
     getChiTietPhieuDKByHocKyAndSinhVien,
 } from '../../service/phieuDKHP';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const cx = classNames.bind(style);
 
@@ -61,6 +64,24 @@ function DangKyHocPhan() {
     const [listHK, setListHK] = useState([]);
 
     const [selectedHK, setSelectedHK] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [huyLHP, setHuyLHP] = useState();
+
+    const handleConfirmation = (item, index) => {
+        setShowConfirmation(true);
+        setHuyLHP(item);
+    };
+
+    const handleConfirm = async () => {
+        // Xử lý logic khi người dùng đồng ý
+        await handleDeleteClick(huyLHP);
+        setShowConfirmation(false);
+    };
+
+    const handleCancel = () => {
+        // Xử lý logic khi người dùng từ chối
+        setShowConfirmation(false);
+    };
 
     useEffect(() => {
         const getHocKyByKhoaHoc = async () => {
@@ -523,7 +544,7 @@ function DangKyHocPhan() {
         };
         getLichDaDK();
     };
-    const handleDeleteClick = async (item, index) => {
+    const handleDeleteClick = async (item) => {
         if (
             item.nhomThucHanh.lopHocPhan.trangThai !== 'Đã khóa' ||
             item.nhomThucHanh.lopHocPhan.trangThai !== 'Chấp nhận mở lớp'
@@ -1314,7 +1335,8 @@ function DangKyHocPhan() {
                                                 variant="outlined"
                                                 color="error"
                                                 size="small"
-                                                onClick={() => handleDeleteClick(item, index)}
+                                                //onClick={() => handleDeleteClick(item, index)}
+                                                onClick={() => handleConfirmation(item, index)}
                                             >
                                                 Hủy
                                             </Button>
@@ -1386,6 +1408,23 @@ function DangKyHocPhan() {
                         </table>
                     </div>
                 </DialogContent>
+            </Dialog>
+            <Dialog
+                open={showConfirmation}
+                onClose={handleCancel}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{'Bạn có chắc hủy đăng ký học phần này?'}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description"></DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancel}>Hủy bỏ</Button>
+                    <Button onClick={handleConfirm} autoFocus>
+                        Đồng ý
+                    </Button>
+                </DialogActions>
             </Dialog>
         </div>
     );

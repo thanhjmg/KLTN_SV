@@ -89,7 +89,7 @@ function Login() {
                                     <input
                                         type="text"
                                         className={cx(
-                                            'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-sv-login-input bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
+                                            'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-md bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
                                         )}
                                         value={userName}
                                         onChange={(e) => setUserName(e.target.value)}
@@ -100,7 +100,7 @@ function Login() {
                                     <input
                                         type="password"
                                         className={cx(
-                                            'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-sv-login-input bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
+                                            'block p-2 pl-4 caret-sv-blue-4 text-sm w-full rounded-md bg-transparent border border-sv-blue-4 outline-none placeholder:text-sv-placeholder placeholder:italic ',
                                         )}
                                         value={password}
                                         onChange={(e) => setPassWord(e.target.value)}
