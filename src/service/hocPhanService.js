@@ -85,11 +85,12 @@ export const findHocPhanByMaSinhVienAndMaNganh = async (maSinhVien, maNganh, acc
     }
 };
 
-export const getChuongTrinhKhungByMaSV = async (maSV, accessToken, axiosJWT) => {
+export const getChuongTrinhKhungByMaSV = async (maSV, maKH, accessToken, axiosJWT) => {
     try {
         const res = await axiosJWT.get('/chuongtrinhkhung/sv', {
             params: {
                 maSV: maSV,
+                maKH: maKH,
             },
             headers: { Authorization: `Bearer ${accessToken}` },
         });

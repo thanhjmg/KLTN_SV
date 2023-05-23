@@ -96,16 +96,22 @@ function ChuongTrinhKhung() {
 
         return nodeDieuKien;
     };
+    //console.log(currSV);
 
     useEffect(() => {
         const getChuongTrinhKhung = async () => {
-            let result = await getChuongTrinhKhungByMaSV(currSV?.maSinhVien, accessToken, axiosJWT);
-            // console.log(result);
+            let result = await getChuongTrinhKhungByMaSV(
+                currSV?.maSinhVien,
+                currSV?.khoaHoc?.maKhoaHoc,
+                accessToken,
+                axiosJWT,
+            );
+            //console.log(result);
             setListHocPhan(result);
         };
         const getHocKyByKhoaHoc = async () => {
             try {
-                if (!!currSV.khoaHoc) {
+                if (!!currSV?.khoaHoc) {
                     const startYear = currSV?.khoaHoc?.tenKhoaHoc.substring(0, 4);
                     const endYear = currSV?.khoaHoc?.tenKhoaHoc.substring(5);
                     var list = await getHocKyTheoKhoaHoc(
@@ -128,7 +134,7 @@ function ChuongTrinhKhung() {
         getHocKyByKhoaHoc();
         getChuongTrinhKhung();
         getBangDiem();
-    }, []);
+    }, [currSV]);
     return (
         <div className="w-full h-max bg-gray-100 flex flex-row pb-6">
             <div className="w-1/12"></div>
