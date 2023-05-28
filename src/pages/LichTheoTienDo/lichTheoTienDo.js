@@ -94,18 +94,26 @@ function LichTheoTienDo() {
                     filteredListLich = listALLLichByHK;
                 }
                 let map = new Map();
+
                 filteredListLich.forEach((item) => {
                     if (
                         !map.has(
-                            item.nhomThucHanh?.maNhom && item.caHoc.tenCaHoc && days[new Date(item.ngayHoc).getDay()],
+                            item.nhomThucHanh?.maNhom &&
+                                item.caHoc.tenCaHoc &&
+                                days[new Date(item.ngayHoc).getDay()] &&
+                                item.trangThai,
                         )
                     ) {
                         map.set(item.nhomThucHanh?.maNhom, item);
                     }
+                    if (selectedValue !== 'lichThi')
+                        if (item.trangThai === 'Lịch thi') {
+                            map.set(item.trangThai, item);
+                        }
                 });
                 let filteredList = Array.from(map.values());
+
                 setListLich(filteredList);
-                console.log(listALLLichByHK);
             }
         };
 

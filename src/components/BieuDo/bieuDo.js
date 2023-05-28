@@ -84,7 +84,7 @@ const BieuDo = ({ hocKy }) => {
     }, [userLogin, hocKy, listLHP]);
 
     useEffect(() => {
-        if (listLHP.length > 0) {
+        if (listLHP?.length > 0) {
             if (listDiemTK.length > 0 && listDiemTB.length > 0) {
                 const dt = [];
                 for (let i = 0; i < listDiemTK.length; i++) {

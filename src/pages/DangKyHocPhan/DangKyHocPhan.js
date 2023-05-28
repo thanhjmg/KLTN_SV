@@ -916,7 +916,7 @@ function DangKyHocPhan() {
         // Kiểm tra giá trị mới của state check sau khi đã được cập nhật
         setListLHP([]);
         const maLHP = [];
-
+        setListLich([]);
         let listKhongTrung = [];
         if (checkTrung === true) {
             for (let i = 0; i < listLHP?.length; i++) {
@@ -1156,7 +1156,7 @@ function DangKyHocPhan() {
                             onChange={handleCheckboxChange}
                         />
                         <span>
-                            <b className="text-base text-sv-blue-5 mr-6 ml-2">Hiển thị lớp học phần không trùng lịch</b>
+                            <b className="text-base text-sv-blue-5 mr-6 ml-2">Lọc các lớp học phần không trùng lịch</b>
                         </span>
                     </label>
                 </div>
