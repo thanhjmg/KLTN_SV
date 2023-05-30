@@ -69,7 +69,7 @@ const BieuDo = ({ hocKy }) => {
                     );
 
                     newListDiemTB.push(diemTB);
-                    newListDiemTK.push(diemTK[0].diemTongKet);
+                    newListDiemTK.push(diemTK[0]?.diemTongKet);
                 }
 
                 setListDiemTB(newListDiemTB);
@@ -84,7 +84,7 @@ const BieuDo = ({ hocKy }) => {
     }, [userLogin, hocKy, listLHP]);
 
     useEffect(() => {
-        if (listLHP.length > 0) {
+        if (listLHP?.length > 0) {
             if (listDiemTK.length > 0 && listDiemTB.length > 0) {
                 const dt = [];
                 for (let i = 0; i < listDiemTK.length; i++) {

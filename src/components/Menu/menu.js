@@ -7,6 +7,7 @@ import { SlScreenDesktop } from 'react-icons/sl';
 import { BsFillCalendar2CheckFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import config from '../../configRoutes';
+
 function Menu() {
     const cx = classNames.bind(style);
     const navigate = useNavigate();
@@ -25,18 +26,19 @@ function Menu() {
                     </div>
                 </div>
             </div>
-            <MenuItem
-                menuItems={[
-                    {
-                        name: 'Thông tin chung',
-                        subItems: [
-                            { name: 'Thông tin sinh viên', to: 'thong-Tin-Sinh-Vien' },
-                            { name: 'Thông tin học tập', to: 'login' },
-                        ],
-                    },
-                ]}
-                icon={<SlScreenDesktop />}
-            ></MenuItem>
+            <div className={cx('menu')}>
+                <div className={cx('flex flex-row items-center p-2')}>
+                    <div className="text-xl">
+                        <FaHome color="gray" />
+                    </div>
+                    <div
+                        className="ml-2 text-gray-500 hover:cursor-pointer"
+                        onClick={() => navigate(config.routeConfig.thongTinSinhVien)}
+                    >
+                        Thông tin sinh viên
+                    </div>
+                </div>
+            </div>
             <MenuItem
                 menuItems={[
                     {

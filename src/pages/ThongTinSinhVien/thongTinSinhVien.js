@@ -8,7 +8,12 @@ import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 import classNames from 'classnames';
 import logo_iuh from './../../images/logo_iuh.png';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import config from '../../configRoutes';
+import style from './../../components/Menu/menu.scss';
 function ThongTinSinhVien() {
+    const cx = classNames.bind(style);
+    const navigate = useNavigate();
     // const cx = classNames.bind(style);
     let userLogin = useSelector((state) => state.persistedReducer.signIn.userLogin);
     //console.log(userLogin);
@@ -50,21 +55,27 @@ function ThongTinSinhVien() {
                                 <div className="text-xl">
                                     <FaHome color="gray" />
                                 </div>
-                                <div className="ml-2 text-gray-500">Trang chủ</div>
+                                <div
+                                    className="ml-2 text-gray-500 hover:cursor-pointer"
+                                    onClick={() => navigate(config.routeConfig.home)}
+                                >
+                                    Trang chủ
+                                </div>
                             </div>
                         </div>
-                        <MenuItem
-                            menuItems={[
-                                {
-                                    name: 'Thông tin chung',
-                                    subItems: [
-                                        { name: 'Thông tin sinh viên', to: '' },
-                                        { name: 'Thông tin học tập', to: 'login' },
-                                    ],
-                                },
-                            ]}
-                            icon={<SlScreenDesktop />}
-                        ></MenuItem>
+                        <div className={cx('menu')}>
+                            <div className={cx('flex flex-row items-center p-2')}>
+                                <div className="text-xl">
+                                    <FaHome color="gray" />
+                                </div>
+                                <div
+                                    className="ml-2 text-gray-500 hover:cursor-pointer"
+                                    onClick={() => navigate(config.routeConfig.thongTinSinhVien)}
+                                >
+                                    Thông tin sinh viên
+                                </div>
+                            </div>
+                        </div>
                         <MenuItem
                             menuItems={[
                                 {

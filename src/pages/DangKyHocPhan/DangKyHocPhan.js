@@ -695,6 +695,9 @@ function DangKyHocPhan() {
     let lopHP = listLHP?.find((e) => e.maLopHocPhan === selectedLHP);
 
     const clickDangKyHP = async () => {
+        if (!selectedLHP || !selectedLich) {
+            alert('Đăng ký không thành công');
+        }
         if (lopHP.trangThai === 'Chờ sinh viên đăng ký') {
             let listTrung = [];
             var daLoc;
@@ -752,8 +755,8 @@ function DangKyHocPhan() {
 
                     //lọc Trùng
                     listTrung.forEach((item) => {
-                        if (!locTrung.has(item.maLopHocPhan)) {
-                            locTrung.set(item.maLopHocPhan, item);
+                        if (!locTrung.has(item?.maLopHocPhan)) {
+                            locTrung.set(item?.maLopHocPhan, item);
                         }
                     });
 
@@ -916,7 +919,7 @@ function DangKyHocPhan() {
         // Kiểm tra giá trị mới của state check sau khi đã được cập nhật
         setListLHP([]);
         const maLHP = [];
-
+        setListLich([]);
         let listKhongTrung = [];
         if (checkTrung === true) {
             for (let i = 0; i < listLHP?.length; i++) {
