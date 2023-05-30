@@ -66,7 +66,7 @@ function ThongTinSinhVien() {
                         <div className={cx('menu')}>
                             <div className={cx('flex flex-row items-center p-2')}>
                                 <div className="text-xl">
-                                    <FaHome color="gray" />
+                                    <SlScreenDesktop color="gray" />
                                 </div>
                                 <div
                                     className="ml-2 text-gray-500 hover:cursor-pointer"
