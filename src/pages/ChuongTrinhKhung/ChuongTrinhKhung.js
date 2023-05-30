@@ -144,7 +144,7 @@ function ChuongTrinhKhung() {
                 </div>
                 <div className="w-5/6 bg-white ml-4">
                     <div className="text-xl text-sv-blue-5 m-4">
-                        <b>Chương trình khung</b>
+                        <b>Chương trình đào tạo</b>
                     </div>
                     <div className="border-t border-gray-200 m-2"></div>
                     <div className="m-2">

@@ -1159,7 +1159,7 @@ function DangKyHocPhan() {
                             onChange={handleCheckboxChange}
                         />
                         <span>
-                            <b className="text-base text-sv-blue-5 mr-6 ml-2">Hiển thị lớp học phần không trùng lịch</b>
+                            <b className="text-base text-sv-blue-5 mr-6 ml-2">Lọc các lớp học phần không trùng lịch</b>
                         </span>
                     </label>
                 </div>
